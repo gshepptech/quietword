@@ -173,6 +173,30 @@ export interface ProbeOptions {
 
 const TEXTUAL = /^(text\/|application\/(json|javascript|xml|x-javascript|ld\+json|problem\+json))/i;
 
+export interface RequesterInit {
+  dispatcher: Agent;
+  method: "GET" | "POST" | "HEAD";
+  signal: AbortSignal;
+  headers: Record<string, string>;
+  body?: string;
+}
+
+export interface RawResponse {
+  statusCode: number;
+  headers: Record<string, string | string[] | undefined>;
+  body: AsyncIterable<Buffer | Uint8Array>;
+}
+
+/**
+ * How a single request is actually sent. Injectable so a test can hand `probe`
+ * a redirect pointing at a private address and prove the loop refuses to follow
+ * it. Every guard stays in `probe` itself, so a stubbed requester cannot get
+ * past anything the real one could not.
+ */
+export type Requester = (url: string, init: RequesterInit) => Promise<RawResponse>;
+
+const undiciRequester: Requester = (url, init) => request(url, init);
+
 /**
  * One guarded request. Redirects are followed by hand so every hop is a fresh
  * validated connection: a 302 pointing at 169.254.169.254 fails exactly the way
@@ -183,6 +207,7 @@ export async function probe(
   target: string,
   budget: ScanBudget,
   options: ProbeOptions = {},
+  send: Requester = undiciRequester,
 ): Promise<Probe> {
   const chain: string[] = [];
   let current = target;
@@ -235,7 +260,7 @@ export async function probe(
     const timer = setTimeout(() => controller.abort(), deadline);
 
     try {
-      const response = await request(current, {
+      const response = await send(current, {
         dispatcher,
         method: options.method ?? "GET",
         signal: controller.signal,

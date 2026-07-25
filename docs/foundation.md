@@ -229,9 +229,17 @@ including every redirect hop, therefore passes a second gate that checks the hos
 the socket is opened. Both gates are tested, including with a real server standing on loopback that
 the scanner must fail to reach.
 
-**Redirects.** Followed manually, one hop at a time, capped at 4. Each hop is a fresh validated
-request, so a redirect to `http://169.254.169.254/` fails the same way a direct request would. Every
-hop counts against the request budget.
+**Redirects.** Followed manually, one hop at a time, capped at 4. Each hop goes back through the same
+checks as the first request, so a redirect to `http://169.254.169.254/` fails the same way a direct
+request would. Every hop counts against the request budget.
+
+This is proven by `redirect revalidation` in `test/net.test.ts`, which hands `probe` a stubbed
+transport that answers the first request with a 302 pointing at a private address, then throws if the
+scanner ever sends a second request. It covers cloud metadata, IPv4 and IPv6 loopback, two private
+ranges, `localhost` by name, an `.internal` suffix, and a scheme change to `file:`. The transport is
+stubbed rather than stood up on a real host because the only server a test can bind is on loopback,
+which the scanner refuses on the first hop; every guard stays inside `probe`, so a stubbed transport
+gets past nothing the real one could not. Deleting the hop check makes all seven fail.
 
 **Budgets.** Per scan: 40 requests, 25 seconds total wall clock, 8 seconds per request, 1.5 MB per
 response body, 6 MB across the whole scan. The plan said 30 requests and 20 seconds. Adding up what

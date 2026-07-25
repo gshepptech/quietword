@@ -1,6 +1,7 @@
 import { createServer, type Server } from "node:http";
 import { AddressInfo } from "node:net";
 
+import type { Agent } from "undici";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import {
@@ -10,6 +11,7 @@ import {
   LIMITS,
   probe,
   readCapped,
+  type Requester,
   ScanBudget,
   USER_AGENT,
 } from "@/lib/scanner/net";
@@ -192,5 +194,107 @@ describe("discard", () => {
   it("does nothing when handed something that is not a stream", () => {
     expect(() => discard(null)).not.toThrow();
     expect(() => discard("a string")).not.toThrow();
+  });
+});
+
+/**
+ * The redirect gate. A scanner that validates the address the user typed and
+ * then follows a 302 wherever it points is not a guarded scanner at all, so
+ * every hop goes back through the same checks as the first request.
+ *
+ * The requester is stubbed here rather than stood up on a real host, because
+ * the only reachable server a test can bind is on loopback, which the scanner
+ * refuses on the first hop. Stubbing the transport leaves every guard in
+ * `probe` where it lives.
+ */
+describe("redirect revalidation", () => {
+  function emptyBody(): AsyncIterable<Buffer> & { destroy(): void; on(): void } {
+    return {
+      async *[Symbol.asyncIterator]() {},
+      destroy() {},
+      on() {},
+    };
+  }
+
+  function redirectingTo(location: string): { send: Requester; calls: string[] } {
+    const calls: string[] = [];
+    const send: Requester = async (url) => {
+      calls.push(url);
+      if (calls.length > 1) {
+        throw new Error(`the scanner sent a request it should have refused: ${url}`);
+      }
+      return { statusCode: 302, headers: { location }, body: emptyBody() };
+    };
+    return { send, calls };
+  }
+
+  it.each([
+    ["cloud metadata", "http://169.254.169.254/latest/meta-data/", "link-local"],
+    ["loopback", "http://127.0.0.1:8080/admin", "loopback"],
+    ["a private network", "http://10.0.0.5/internal", "private"],
+    ["another private range", "http://192.168.1.1/", "private"],
+    ["IPv6 loopback", "http://[::1]:3000/", "loopback"],
+    ["the local machine by name", "http://localhost:5432/", "local machine"],
+    ["an internal suffix", "http://vault.internal/secrets", "local network name"],
+  ])("refuses a redirect to %s and never sends the second request", async (_name, location, reason) => {
+    const { send, calls } = redirectingTo(location);
+    const budget = new ScanBudget();
+
+    const outcome = await probe({} as Agent, "https://redirector.example/", budget, {}, send);
+
+    expect(outcome.ok).toBe(false);
+    if (!outcome.ok) {
+      expect(outcome.kind).toBe("blocked");
+      expect(outcome.message).toContain(reason);
+    }
+    // One request went out, to the address that was allowed. The hop was not made.
+    expect(calls).toEqual(["https://redirector.example/"]);
+    expect(budget.requestsUsed).toBe(1);
+  });
+
+  it("refuses a redirect that changes to a scheme it does not speak", async () => {
+    const { send, calls } = redirectingTo("file:///etc/passwd");
+    const outcome = await probe({} as Agent, "https://redirector.example/", new ScanBudget(), {}, send);
+
+    expect(outcome.ok).toBe(false);
+    if (!outcome.ok) expect(outcome.kind).toBe("blocked");
+    expect(calls).toHaveLength(1);
+  });
+
+  it("follows a redirect to a public address and records the chain", async () => {
+    const calls: string[] = [];
+    const send: Requester = async (url) => {
+      calls.push(url);
+      if (calls.length === 1) {
+        return { statusCode: 301, headers: { location: "https://www.example.com/" }, body: emptyBody() };
+      }
+      return {
+        statusCode: 200,
+        headers: { "content-type": "text/html" },
+        body: emptyBody(),
+      };
+    };
+
+    const outcome = await probe({} as Agent, "https://example.com/", new ScanBudget(), {}, send);
+    expect(outcome.ok).toBe(true);
+    if (outcome.ok) {
+      expect(outcome.url).toBe("https://www.example.com/");
+      expect(outcome.chain).toEqual(["https://example.com/", "https://www.example.com/"]);
+    }
+  });
+
+  it("stops rather than following a redirect loop forever", async () => {
+    const calls: string[] = [];
+    const send: Requester = async (url) => {
+      calls.push(url);
+      return { statusCode: 302, headers: { location: "https://example.com/next" }, body: emptyBody() };
+    };
+
+    const budget = new ScanBudget();
+    const outcome = await probe({} as Agent, "https://example.com/", budget, {}, send);
+
+    expect(outcome.ok).toBe(false);
+    if (!outcome.ok) expect(outcome.kind).toBe("too_many_redirects");
+    expect(calls.length).toBe(LIMITS.redirects + 1);
   });
 });
