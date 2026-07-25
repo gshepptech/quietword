@@ -95,16 +95,25 @@ are would be the same lie as reporting a false pass.
 **Method.** Fetch the page HTML, extract inline scripts and same-origin `<script src>` URLs, fetch
 those JavaScript assets up to the request and byte budget, and match the combined text against a set
 of high-precision credential patterns: provider-prefixed keys (`AKIA`, `sk_live_`, `rk_live_`,
-`sk-ant-`, `sk-proj-`, `ghp_`/`gho_`/`ghs_`/`ghu_`/`ghr_`, `AIza`, `xox[baprs]-`, `SG.`), PEM private
-key headers, and JWTs whose decoded payload claims a privileged role.
+`sk-ant-`, `sk-proj-`, `ghp_`/`gho_`/`ghs_`/`ghu_`/`ghr_`, `github_pat_`, `xox[baprs]-`, `SG.`,
+`re_`), database connection strings carrying a password, PEM private key headers, and JWTs whose
+decoded payload claims a privileged role.
 
 The highest-value case for this audience is a Supabase `service_role` JWT shipped to the browser.
 That key bypasses row-level security completely. It is detected by base64-decoding any JWT found in
 the bundle and reading the `role` claim, which is exact rather than heuristic.
 
-**Deliberate non-findings.** Supabase anon keys, Firebase web config, Stripe publishable keys, and
-PostHog or Sentry public DSNs are meant to be in the browser. Flagging them would be a false alarm
-and would teach the user to distrust the tool. They are recognised and explicitly not reported.
+**Deliberate non-findings.** Supabase anon keys, Firebase web config, Google browser API keys
+(`AIza...`), Stripe publishable keys, and PostHog or Sentry public DSNs are meant to be in the
+browser. Flagging them would be a false alarm and would teach the user to distrust the tool. They are
+recognised and explicitly not reported.
+
+The plan originally listed `AIza` keys as a finding. That was wrong for this audience and it was
+changed during the build. Google documents the Firebase web `apiKey` as public by design, and a large
+share of apps built with Lovable and Bolt ship one. Reporting it would have produced a false alarm on
+a correctly-built app, which is the failure this check most needs to avoid. A Google key that is
+missing its referrer restrictions is a real problem, but that is not determinable from the bundle, so
+it belongs in the paid review rather than here.
 
 **Confidence.** High when a match is found, because every pattern is a documented, provider-specific
 key format rather than an entropy guess. Medium for a clean result, because code splitting means
@@ -214,12 +223,21 @@ private one to the socket. Doing it in the lookup means the address that gets co
 address that got checked. This is why `undici` is a direct dependency: Node's global `fetch` gives no
 way to reach the connect-time lookup.
 
+The lookup is not sufficient on its own. Node skips DNS entirely when the host is already an IP
+literal, so `http://169.254.169.254/` would never reach the guarded lookup at all. Every request,
+including every redirect hop, therefore passes a second gate that checks the hostname directly before
+the socket is opened. Both gates are tested, including with a real server standing on loopback that
+the scanner must fail to reach.
+
 **Redirects.** Followed manually, one hop at a time, capped at 4. Each hop is a fresh validated
 request, so a redirect to `http://169.254.169.254/` fails the same way a direct request would. Every
 hop counts against the request budget.
 
-**Budgets.** Per scan: 30 requests, 20 seconds total wall clock, 8 seconds per request, 2 MB per
-response body, 6 MB across the whole scan. Bodies are read as a capped stream and truncated rather
+**Budgets.** Per scan: 40 requests, 25 seconds total wall clock, 8 seconds per request, 1.5 MB per
+response body, 6 MB across the whole scan. The plan said 30 requests and 20 seconds. Adding up what
+the five checks actually need came to roughly 30 requests in the worst case (2 for HTTPS, 6 for the
+page and its scripts, 8 for API routes, 11 for the rate limit burst, 3 for error probes), which left
+no headroom for redirects, so the ceiling moved up rather than the checks being cut. Bodies are read as a capped stream and truncated rather
 than buffered whole. When the budget runs out, checks that had not run yet report `not checked`.
 They do not report `pass`.
 
@@ -273,6 +291,7 @@ Dependencies not added, and why:
 │   │   ├── layout.tsx        fonts, metadata, page shell
 │   │   ├── page.tsx          the one screen
 │   │   ├── globals.css       Tailwind theme: palette, type scale
+│   │   ├── icon.svg          the mark
 │   │   └── api/scan/route.ts consent gate, rate limit, calls the scanner
 │   ├── components/           form, report, per-check card, verdict pill
 │   └── lib/
@@ -280,10 +299,12 @@ Dependencies not added, and why:
 │       └── scanner/
 │           ├── types.ts      Verdict, Confidence, CheckResult, ScanReport
 │           ├── url.ts        input normalisation and validation
-│           ├── net.ts        address denylist, guarded fetch, budget
+│           ├── addresses.ts  the address and hostname denylist
+│           ├── net.ts        guarded request, connect-time lookup, budget
+│           ├── context.ts    per-scan state shared across checks
 │           ├── collect.ts    page + bundle gathering shared by checks
 │           ├── index.ts      orchestration, budget handover
-│           └── checks/       one file per check
+│           └── checks/       one file per check, plus shared.ts
 └── test/
     ├── fixtures/             captured response bodies to match against
     └── *.test.ts
