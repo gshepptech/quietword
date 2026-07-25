@@ -96,6 +96,7 @@ parser (only script tags are needed), any component or icon library.
 │   │   ├── layout.tsx          fonts, metadata, shell
 │   │   ├── page.tsx            the one screen
 │   │   ├── globals.css         Tailwind theme: palette, type scale
+│   │   ├── icon.svg            the mark
 │   │   └── api/scan/route.ts   consent gate, rate limit, calls the scanner
 │   ├── components/             form, report, check card, verdict pill
 │   └── lib/
@@ -103,10 +104,12 @@ parser (only script tags are needed), any component or icon library.
 │       └── scanner/
 │           ├── types.ts        Verdict, Confidence, CheckResult, ScanReport
 │           ├── url.ts          input normalisation and validation
-│           ├── net.ts          address denylist, guarded fetch, budget
+│           ├── addresses.ts    the address and hostname denylist
+│           ├── net.ts          guarded request, connect-time lookup, budget
+│           ├── context.ts      per-scan state shared across checks
 │           ├── collect.ts      page + bundle gathering shared by checks
 │           ├── index.ts        orchestration
-│           └── checks/         one file per check
+│           └── checks/         one file per check, plus shared.ts
 └── test/
     ├── fixtures/
     └── *.test.ts

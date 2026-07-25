@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+/*
+  Warm paper and ink, on purpose. A founder reading that their admin route is
+  open should feel like they are reading a letter, not watching a terminal fill
+  with red. Dark backgrounds and neon accents are the visual grammar of threat,
+  and this product is trying to lower the temperature.
+*/
+@theme {
+  --color-paper: #faf6ef;
+  --color-surface: #ffffff;
+  --color-ink: #1a1917;
+  --color-muted: #6b6459;
+  --color-line: #e4dccb;
+  --color-forest: #1b4d3e;
+  --color-forest-deep: #123528;
+  --color-pass: #2f6b4f;
+  --color-clay: #a63a17;
+  --color-unknown: #77706a;
+  --color-amber: #b87514;
+  --color-wash: #f2ebdd;
+
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-plex-sans), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", monospace;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.018em;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+
+  /* One focus treatment everywhere, and it is always visible. */
+  :focus-visible {
+    outline: 2px solid var(--color-amber);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background-color: #e9e0c9;
+  }
+}
+
+@layer components {
+  /*
+    Indeterminate progress. It is here because the scan takes long enough that a
+    still page reads as broken, not as decoration.
+  */
+  .scan-progress::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inline-size: 35%;
+    background-color: var(--color-forest);
+    animation: scan-sweep 1.5s ease-in-out infinite;
+  }
+}
+
+@keyframes scan-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(285%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scan-progress::after {
+    animation: none;
+    inline-size: 100%;
+    opacity: 0.35;
+  }
+}
