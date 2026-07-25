@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import {
   createDispatcher,
+  discard,
   guardedLookup,
   LIMITS,
   probe,
@@ -159,5 +160,37 @@ describe("user agent", () => {
   it("says who it is and does not pretend to be a browser", () => {
     expect(USER_AGENT).toContain("GreenlitScanner");
     expect(USER_AGENT).not.toMatch(/Mozilla|Chrome|Safari/);
+  });
+});
+
+/**
+ * Regression. Destroying an undici body while the request is still in flight
+ * makes the stream emit an AbortError, and with no listener attached that
+ * becomes an uncaught exception. It showed up the first time the scanner
+ * followed a real redirect, which is a path the scanner takes on most sites.
+ */
+describe("discard", () => {
+  it("swallows the error a stream raises when it is thrown away mid-flight", () => {
+    const listeners: Array<() => void> = [];
+    let destroyed = false;
+    const body = {
+      on(event: string, fn: () => void) {
+        if (event === "error") listeners.push(fn);
+      },
+      destroy() {
+        destroyed = true;
+        // What undici does: raise on the stream rather than on the caller.
+        for (const fn of listeners) fn();
+      },
+    };
+
+    expect(() => discard(body)).not.toThrow();
+    expect(destroyed).toBe(true);
+    expect(listeners.length).toBe(1);
+  });
+
+  it("does nothing when handed something that is not a stream", () => {
+    expect(() => discard(null)).not.toThrow();
+    expect(() => discard("a string")).not.toThrow();
   });
 });

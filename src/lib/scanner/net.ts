@@ -252,7 +252,7 @@ export async function probe(
       const status = response.statusCode;
 
       if (follow && status >= 300 && status < 400 && headers["location"]) {
-        response.body.destroy();
+        discard(response.body);
         if (hop === LIMITS.redirects) {
           return {
             ok: false,
@@ -269,7 +269,7 @@ export async function probe(
       const wantsBody = !options.skipBody && (contentType === "" || TEXTUAL.test(contentType));
       const { text, truncated } = wantsBody
         ? await readCapped(response.body, budget)
-        : (response.body.destroy(), { text: "", truncated: false });
+        : (discard(response.body), { text: "", truncated: false });
 
       return {
         ok: true,
@@ -311,6 +311,23 @@ export async function probe(
   };
 }
 
+/**
+ * Throw away a response body we are not going to read.
+ *
+ * Destroying an undici body while the request is still in flight makes the
+ * stream emit an AbortError. Nothing is waiting on that stream by this point,
+ * so with no listener attached it becomes an uncaught exception and takes the
+ * process down. This is the only place that error can appear, and abandoning
+ * the body is the intended outcome, so it is swallowed here deliberately rather
+ * than anywhere further out.
+ */
+export function discard(body: unknown): void {
+  if (typeof body !== "object" || body === null) return;
+  const stream = body as { on?: (event: string, fn: () => void) => void; destroy?: () => void };
+  if (typeof stream.on === "function") stream.on("error", () => undefined);
+  if (typeof stream.destroy === "function") stream.destroy();
+}
+
 function flattenHeaders(raw: Record<string, string | string[] | undefined>): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [key, value] of Object.entries(raw)) {
@@ -343,8 +360,7 @@ export async function readCapped(
   }
 
   // Stop the transfer rather than draining a body we already decided to cut.
-  const stream = body as { destroy?: () => void };
-  if (truncated && typeof stream.destroy === "function") stream.destroy();
+  if (truncated) discard(body);
 
   budget.spendBytes(size);
   return { text: Buffer.concat(chunks).toString("utf8"), truncated };
