@@ -74,8 +74,21 @@ describe("Report", () => {
         ])}
       />,
     );
-    expect(html).toContain("2 checks found something worth fixing");
+    expect(html).toContain("Two checks found something worth fixing");
     expect(html).not.toMatch(/critical|urgent|danger|vulnerable/i);
+  });
+
+  it("writes the counts as words so the heading reads as a sentence", () => {
+    const html = renderToStaticMarkup(
+      <Report
+        report={report([
+          check({ id: "secrets", verdict: "attention" }),
+          check({ id: "auth", verdict: "not_checked" }),
+          check({ id: "https", verdict: "not_checked" }),
+        ])}
+      />,
+    );
+    expect(html).toContain("One check found something worth fixing. Two could not be run at all.");
   });
 
   it("says when the scan ran out of room instead of hiding it", () => {

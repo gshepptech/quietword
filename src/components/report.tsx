@@ -97,21 +97,32 @@ function CheckCard({ check, index }: { check: CheckResult; index: number }) {
   );
 }
 
+// There are only ever five checks, so the counts read as words rather than as
+// a heading with digits in the middle of a sentence.
+const WORDS = ["none", "one", "two", "three", "four", "five"] as const;
+
+function count(n: number): string {
+  return WORDS[n] ?? String(n);
+}
+
 function summaryLine(report: ScanReport): string {
   const { attention, notChecked } = report.summary;
   const total = report.checks.length;
+  const ran = total - notChecked;
 
   if (attention === 0 && notChecked === 0) {
-    return `All ${total} checks came back clean.`;
+    return `All ${count(total)} checks came back clean.`;
   }
   if (attention === 0) {
-    return `Nothing came back on the ${total - notChecked} checks Greenlit could run. ${notChecked} could not be run at all.`;
+    return `Nothing came back on the ${count(ran)} ${ran === 1 ? "check" : "checks"} Greenlit could run. ${count(notChecked).replace(/^\w/, (c) => c.toUpperCase())} could not be run at all.`;
   }
+
   const opener =
     attention === 1
       ? "One check found something worth fixing."
-      : `${attention} checks found something worth fixing.`;
-  return notChecked === 0 ? opener : `${opener} ${notChecked} could not be run at all.`;
+      : `${count(attention).replace(/^\w/, (c) => c.toUpperCase())} checks found something worth fixing.`;
+  if (notChecked === 0) return opener;
+  return `${opener} ${count(notChecked).replace(/^\w/, (c) => c.toUpperCase())} could not be run at all.`;
 }
 
 export function Report({ report }: { report: ScanReport }) {
