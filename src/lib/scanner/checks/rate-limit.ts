@@ -76,13 +76,13 @@ export function detectLimiter(responses: ObservedResponse[]): LimiterEvidence {
 
 /** Deliberately invalid, and obviously so to anyone reading their logs. */
 const PROBE_BODY = JSON.stringify({
-  email: "greenlit-scan@example.com",
+  email: "snaglist-scan@example.com",
   password: "this-is-not-a-real-password",
 });
 
 const TITLE = "Limits on how fast someone can guess passwords";
 
-const METHOD_BASE = `Greenlit found the addresses your app uses for things like signing in or signing up, then sent ${BURST} requests to one of them in a row with a deliberately wrong email and password. It watched for the server turning requests away or telling it how many were left. Nothing resembling a real account was touched.`;
+const METHOD_BASE = `Snaglist found the addresses your app uses for things like signing in or signing up, then sent ${BURST} requests to one of them in a row with a deliberately wrong email and password. It watched for the server turning requests away or telling it how many were left. Nothing resembling a real account was touched.`;
 
 function pickEndpoint(ctx: ScanContext): string[] {
   const discovered = ctx.collected.apiPaths.filter((path) => AUTH_SHAPED.test(path));
@@ -128,10 +128,10 @@ export const rateLimitCheck: Check = {
 
     if (!endpoint) {
       return notChecked("rate_limit", TITLE, {
-        headline: "Greenlit could not find a sign-in or sign-up address to test.",
+        headline: "Snaglist could not find a sign-in or sign-up address to test.",
         why: "Without an endpoint to send requests to there is nothing to measure, and reporting a pass would be inventing a result.",
         nextStep: lastFailure
-          ? `If your app does have a login, its address is named in a way Greenlit did not guess. Greenlit last saw: ${lastFailure}.`
+          ? `If your app does have a login, its address is named in a way Snaglist did not guess. Snaglist last saw: ${lastFailure}.`
           : "If your app has a login, a signup, or a password reset, ask whoever reviews it to test those directly.",
         method: METHOD_BASE,
       });
@@ -155,7 +155,7 @@ export const rateLimitCheck: Check = {
 
     if (attempts < 3) {
       return notChecked("rate_limit", TITLE, {
-        headline: `Greenlit only managed ${attempts} ${attempts === 1 ? "request" : "requests"} to ${endpoint}, which is not enough to tell.`,
+        headline: `Snaglist only managed ${attempts} ${attempts === 1 ? "request" : "requests"} to ${endpoint}, which is not enough to tell.`,
         why: "The requests stopped early, so there is no way to know whether a limit exists or the server simply stopped answering.",
         nextStep: "Run the scan again in a few minutes.",
         method,
@@ -186,7 +186,7 @@ export const rateLimitCheck: Check = {
     return result("rate_limit", TITLE, {
       verdict: "attention",
       confidence: "medium",
-      headline: `Greenlit sent ${attempts} sign-in attempts to ${endpoint} in a row and none of them were turned away.`,
+      headline: `Snaglist sent ${attempts} sign-in attempts to ${endpoint} in a row and none of them were turned away.`,
       why: "With no limit, someone can run through millions of common passwords against your login, or fire your password reset email at the same address over and over.",
       nextStep:
         "Add a rate limit to your sign-in, sign-up, and password reset routes. Five to ten attempts per address every fifteen minutes is a normal setting. Most hosts have this built in, and Upstash Ratelimit is a common choice if yours does not.",
@@ -198,7 +198,7 @@ export const rateLimitCheck: Check = {
         },
         {
           label: "Worth knowing",
-          detail: `Medium confidence. A limit set higher than ${BURST} attempts would not show up in a test this small, so this may be a limit Greenlit could not reach rather than no limit at all.`,
+          detail: `Medium confidence. A limit set higher than ${BURST} attempts would not show up in a test this small, so this may be a limit Snaglist could not reach rather than no limit at all.`,
         },
       ],
     });

@@ -50,7 +50,7 @@ export function Scanner() {
     } catch {
       setState({
         status: "error",
-        message: "Greenlit could not reach its own server. Check your connection and try again.",
+        message: "Snaglist could not reach its own server. Check your connection and try again.",
       });
     }
   }
@@ -100,7 +100,7 @@ export function Scanner() {
         </div>
 
         <p id={noteId} className="mt-4 border-t border-line pt-4 text-sm text-muted">
-          Greenlit sends about thirty requests from its own server, over roughly twenty seconds. It
+          Snaglist sends about thirty requests from its own server, over roughly twenty seconds. It
           never signs in, never sends anything designed to break your app, and refuses any address on
           a private network.
         </p>

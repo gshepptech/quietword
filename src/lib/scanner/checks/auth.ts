@@ -151,7 +151,7 @@ export type RouteOutcome =
 const TITLE = "Data your app hands out without asking who you are";
 
 const METHOD_BASE =
-  "Greenlit asked your API routes for data the way a stranger would, with no login and no cookies, and looked at what came back. A route that answers is only reported when the answer contains personal information such as email addresses. Plenty of routes are open on purpose, and those are not treated as a problem.";
+  "Snaglist asked your API routes for data the way a stranger would, with no login and no cookies, and looked at what came back. A route that answers is only reported when the answer contains personal information such as email addresses. Plenty of routes are open on purpose, and those are not treated as a problem.";
 
 function candidatePaths(ctx: ScanContext): { paths: string[]; discovered: number } {
   const discovered = ctx.collected.apiPaths;
@@ -228,7 +228,7 @@ export const authCheck: Check = {
 
     if (tested === 0) {
       return notChecked("auth", TITLE, {
-        headline: "Greenlit ran out of room before it could test any API routes.",
+        headline: "Snaglist ran out of room before it could test any API routes.",
         why: "This check needs to make several requests, and the scan reached its limit first.",
         nextStep: "Run the scan again in a few minutes.",
         method,
@@ -237,10 +237,10 @@ export const authCheck: Check = {
 
     if (existing === 0) {
       return notChecked("auth", TITLE, {
-        headline: "Greenlit could not find any API routes to test from the outside.",
+        headline: "Snaglist could not find any API routes to test from the outside.",
         why: "Nothing answered at the addresses it tried, so there is nothing to report either way. This is not the same as your app being safe.",
         nextStep:
-          "If your app does have a backend, its routes are named in a way Greenlit did not guess. Worth a human look, since this is the check that most often finds real problems.",
+          "If your app does have a backend, its routes are named in a way Snaglist did not guess. Worth a human look, since this is the check that most often finds real problems.",
         method,
       });
     }
@@ -277,10 +277,10 @@ export const authCheck: Check = {
     return result("auth", TITLE, {
       verdict: "pass",
       confidence: "medium",
-      headline: `None of the ${existing} API ${existing === 1 ? "address" : "addresses"} Greenlit found handed over personal information to a stranger.`,
+      headline: `None of the ${existing} API ${existing === 1 ? "address" : "addresses"} Snaglist found handed over personal information to a stranger.`,
       why: "This is the gap that most often goes wrong in apps built quickly, so a clean result here is the most useful one on the list.",
       nextStep:
-        "Medium confidence, because Greenlit only tested routes your homepage refers to plus a list of common names. Routes reached only from a page behind a login were not tested.",
+        "Medium confidence, because Snaglist only tested routes your homepage refers to plus a list of common names. Routes reached only from a page behind a login were not tested.",
       method,
       evidence,
     });

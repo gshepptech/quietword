@@ -1,3 +1,4 @@
+import { REVIEW_CONTACT, REVIEW_PRICE } from "@/lib/review";
 import type { CheckResult, ScanReport, Verdict } from "@/lib/scanner/types";
 
 const VERDICT_LABEL: Record<Verdict, string> = {
@@ -85,7 +86,7 @@ function CheckCard({ check, index }: { check: CheckResult; index: number }) {
 
         <details className="mt-5 border-t border-line pt-4">
           <summary className="cursor-pointer font-mono text-[0.6875rem] tracking-[0.12em] text-muted uppercase hover:text-ink">
-            How Greenlit checked this
+            How Snaglist checked this
           </summary>
           <p className="mt-3 text-sm text-muted">{check.method}</p>
           {check.verdict !== "not_checked" && (
@@ -114,7 +115,7 @@ function summaryLine(report: ScanReport): string {
     return `All ${count(total)} checks came back clean.`;
   }
   if (attention === 0) {
-    return `Nothing came back on the ${count(ran)} ${ran === 1 ? "check" : "checks"} Greenlit could run. ${count(notChecked).replace(/^\w/, (c) => c.toUpperCase())} could not be run at all.`;
+    return `Nothing came back on the ${count(ran)} ${ran === 1 ? "check" : "checks"} Snaglist could run. ${count(notChecked).replace(/^\w/, (c) => c.toUpperCase())} could not be run at all.`;
   }
 
   const opener =
@@ -136,7 +137,7 @@ export function Report({ report }: { report: ScanReport }) {
           {report.target} · {report.budget.requestsUsed} requests · {seconds}s
         </p>
         <p className="mt-4 max-w-2xl text-[0.9375rem] text-muted">
-          Five checks is not a security audit. Greenlit tested what your app shows the outside world.
+          Five checks is not a security audit. Snaglist tested what your app shows the outside world.
           It did not see your database rules, your dependencies, or anything behind your login.
         </p>
         {report.budget.ranOut && (
@@ -152,6 +153,34 @@ export function Report({ report }: { report: ScanReport }) {
           <CheckCard key={check.id} check={check} index={index} />
         ))}
       </div>
+
+      <ReviewOffer found={report.checks.some((check) => check.verdict === "attention")} />
     </section>
+  );
+}
+
+/**
+ * The scan is the lead magnet and this is the product, so it sits at the end of the
+ * report where someone has just read their own results. Two versions, because the
+ * reason to want a person is different depending on what the scan came back with.
+ */
+function ReviewOffer({ found }: { found: boolean }) {
+  return (
+    <aside className="mt-12 border-t-2 border-ink pt-6">
+      <h3 className="text-2xl">
+        {found ? "Want someone to look at this properly?" : "The scan only sees the outside"}
+      </h3>
+      <p className="mt-4 max-w-2xl text-[0.9375rem] text-muted">
+        {found
+          ? `I go through the app by hand, work out which of these actually matter for your app rather than in general, and write it up in the same plain language. You get a list of what to fix, in the order I would fix it. ${REVIEW_PRICE}, usually back within three days.`
+          : `Five checks passing means nothing obvious is showing from out here. It says nothing about your database rules, your dependencies, or the code behind your login. I go through those by hand and write up what I find in plain language. ${REVIEW_PRICE}, usually back within three days.`}
+      </p>
+      <a
+        href={REVIEW_CONTACT}
+        className="mt-6 inline-block border-b-2 border-forest pb-0.5 font-medium text-forest hover:border-forest-deep hover:text-forest-deep"
+      >
+        Send me the app to review
+      </a>
+    </aside>
   );
 }

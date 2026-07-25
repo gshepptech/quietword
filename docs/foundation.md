@@ -1,11 +1,11 @@
-# Greenlit: foundation
+# Snaglist: foundation
 
 Written before implementation. If the build diverges from this document, this document gets updated
 in the same commit as the change, with the reason.
 
 ## 1. The name
 
-Working directory is `launch-check`. That was a placeholder. The product is **Greenlit**.
+Working directory is `launch-check`. That was a placeholder. The product is **Snaglist**.
 
 Three candidates were on the table.
 
@@ -18,17 +18,17 @@ SiteGuard, AppGuard, and a long tail below them). It reads as an enterprise secu
 exactly the register this audience finds intimidating. A founder who has never had a security
 conversation does not want to buy from a vendor with a shield in its logo.
 
-**Greenlit.** Names the thing the user actually wants: permission to launch. It sits in
+**Snaglist.** Names the thing the user actually wants: permission to launch. It sits in
 launch-readiness language rather than security-vendor language, which matches how the product is
-positioned. It is one word, it is a verb ("get your app greenlit"), and it carries no fear.
+positioned. It is one word, it is a verb ("get your app snaglist"), and it carries no fear.
 
-Chosen: **Greenlit**.
+Chosen: **Snaglist**.
 
-The honest objection to Greenlit is that it implies approval, and the product explicitly must not
+The honest objection to Snaglist is that it implies approval, and the product explicitly must not
 imply that a free five-check scan is a full audit. That tension is real and it is handled in copy
-rather than by changing the name: the report never says "your app is secure" or "you are greenlit".
+rather than by changing the name: the report never says "your app is secure" or "you are snaglist".
 It says which of the five checks came back clean, and it says plainly that five checks is not an
-audit. The word "greenlit" is the brand, not a verdict the product ever issues. This is carried into
+audit. The word "snaglist" is the brand, not a verdict the product ever issues. This is carried into
 CLAUDE.md as a hard copy rule so a future session does not undo it. See also "Risks and open
 questions".
 
@@ -253,7 +253,7 @@ They do not report `pass`.
 cap of 3 scans running at once. In-memory, which is honest about what it is: it resets on restart and
 does not hold across multiple instances. Documented as a known limitation rather than dressed up.
 
-**Identification.** Every request carries a truthful user agent, `GreenlitScanner/0.1`, with a
+**Identification.** Every request carries a truthful user agent, `SnaglistScanner/0.1`, with a
 contact URL when `SCANNER_CONTACT_URL` is set. Someone reading their access logs should be able to
 tell what hit them and why. The scanner does not spoof a browser.
 
@@ -385,9 +385,9 @@ Two rules specific to this product:
 
 ## 13. Risks and open questions
 
-**The name argues with the disclaimer.** Greenlit implies approval; the product must not imply
+**The name argues with the disclaimer.** Snaglist implies approval; the product must not imply
 approval. Copy carries the load, and copy is the thing most likely to drift over time. If a future
-session finds itself writing "you're greenlit" in a report, the name lost and it should be revisited.
+session finds itself writing "you're snaglist" in a report, the name lost and it should be revisited.
 
 **The rate limit check will produce false findings.** A 10-request burst cannot distinguish "no limiter"
 from "limiter set at 20". Reported at medium confidence with the method stated in the report, but some

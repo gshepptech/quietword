@@ -1,17 +1,24 @@
-# Greenlit: project memory
+# Snaglist: project memory
 
 Read this before doing anything. It is the brief, not a README. Full reasoning lives in
 `docs/foundation.md`.
 
 ## 1. Context
 
-Greenlit is a security and launch-readiness scanner for people who built a real app with AI coding
+Snaglist is a security and launch-readiness scanner for people who built a real app with AI coding
 tools (Claude Code, Cursor, Replit, Lovable, Bolt) and have little or no security background. They
 paste a live URL and get a plain-language report on the five most common gaps. It is aimed at one
 person: a solo or near-solo founder who is technical enough to deploy and not technical enough to read
-a bundle and spot an API key. Two tiers are planned, a free automated scan and a paid human review;
-only the free scan is being built. Greenlit is explicitly not a security audit, not a pentest, not a
+a bundle and spot an API key. Snaglist is explicitly not a security audit, not a pentest, not a
 compliance product, and it never claims an app is secure.
+
+**The paid human review is the product. The free scan is how people find it.** Automated scanning of
+AI-built apps is a crowded, commoditised market as of July 2026: CheckVibe, Vibe App Scanner,
+VibeSecurity, VibeDoctor, Scanbee and VibeEval all ship free scanners, and CheckVibe alone runs over
+100 checks against our five. Competing on check count is a losing race we are not entering. Every one
+of those competitors is automated only, and none of them sells a person who reads your app and tells
+you what to do. That is the gap, and the five checks exist to earn the right to make that offer. Build
+and price accordingly: the scan stays free forever, the review is what pays.
 
 ## 2. Hard guardrails (non-negotiable)
 
@@ -27,7 +34,17 @@ compliance product, and it never claims an app is secure.
   reports `not_checked` with a reason. A false pass is the worst thing this product can do.
 - **The product never tells a user their app is secure.** Not in the report, not in the CTA, not
   anywhere. It reports which of five checks came back clean, and it says five checks is not an audit.
-  The brand is Greenlit; "greenlit" is never a verdict the product issues.
+  The brand is Snaglist, taken from a snagging list, the defect list an inspector writes before a
+  new building is handed over. A clean scan is never reported as "no snags" or "all clear"; it is
+  reported as which checks came back clean and what was not looked at. Enforced by
+  `test/copy.test.ts`.
+
+  Naming history: the product was called Greenlit until 25 July 2026. Dropped because Veracode holds
+  a trademark on Greenlight for security scanning software, and greenlit.io and getgreenlit.xyz are
+  both live products. Bare "Snag" was considered and rejected: SNAG LLC holds a registered software
+  mark and Snagit is well known, so a single common noun is both hard to defend and easy to collide
+  with. Snaglist has not yet had a formal trademark or domain check. Do that before spending money on
+  the name.
 - **Scanning guardrails are structural, not advisory.** Address denylist enforced at connect-time DNS
   lookup, manual redirect following with revalidation, request and time and byte budgets, truthful
   user agent, consent required. Do not weaken any of these for convenience. Details in

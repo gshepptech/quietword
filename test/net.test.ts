@@ -160,7 +160,7 @@ describe("readCapped", () => {
 
 describe("user agent", () => {
   it("says who it is and does not pretend to be a browser", () => {
-    expect(USER_AGENT).toContain("GreenlitScanner");
+    expect(USER_AGENT).toContain("SnaglistScanner");
     expect(USER_AGENT).not.toMatch(/Mozilla|Chrome|Safari/);
   });
 });

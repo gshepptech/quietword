@@ -80,7 +80,8 @@ describe("writing rules", () => {
   });
 
   it("never tells a user their app is secure", () => {
-    const overclaim = /(your app is secure|fully secure|you'?re greenlit|you are greenlit|100% secure)/i;
+    const overclaim =
+      /(your app is secure|fully secure|100% secure|no snags|all clear|nothing to worry about|you'?re (safe|clear|good to go))/i;
     const offenders = FILES.filter((file) => overclaim.test(file.text)).map((file) => file.path);
     expect(offenders).toEqual([]);
   });

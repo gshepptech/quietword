@@ -1,4 +1,4 @@
-# Greenlit
+# Snaglist
 
 A free security scan for people who built an app with AI coding tools and have never had anyone check
 it for holes. Paste a live URL, get a plain-language report on five things that commonly go wrong.
@@ -58,7 +58,7 @@ into the code rather than written on a wall:
 - Redirects are followed by hand, four hops maximum, each one revalidated.
 - One scan is capped at 40 requests, 25 seconds, and 6 MB.
 - `POST /api/scan` allows 5 scans per IP per 15 minutes, 3 at a time.
-- Every request says `GreenlitScanner/0.1`. It does not pretend to be a browser.
+- Every request says `SnaglistScanner/0.1`. It does not pretend to be a browser.
 - The form requires a tick confirming you own the app or have permission to test it, and the API
   refuses without it.
 

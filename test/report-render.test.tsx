@@ -13,7 +13,7 @@ function check(overrides: Partial<CheckResult>): CheckResult {
     headline: "Nothing turned up.",
     why: "Because it matters.",
     nextStep: "Do this next.",
-    method: "Greenlit read the page.",
+    method: "Snaglist read the page.",
     evidence: [],
     ...overrides,
   };
@@ -61,8 +61,8 @@ describe("Report", () => {
       <Report report={report([check({ id: "secrets" }), check({ id: "auth" })])} />,
     );
     expect(html).toContain("came back clean");
-    // The brand is Greenlit. "Greenlit" is never a verdict the product issues.
-    expect(html).not.toMatch(/is secure|you'?re greenlit|you are greenlit|fully secure|all clear/i);
+    // The brand is Snaglist. "Snaglist" is never a verdict the product issues.
+    expect(html).not.toMatch(/is secure|you'?re snaglist|you are snaglist|fully secure|all clear/i);
   });
 
   it("counts what needs fixing without shouting about it", () => {

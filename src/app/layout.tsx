@@ -26,9 +26,9 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Greenlit: five security checks for the app you shipped",
+  title: "Snaglist: five security checks for the app you shipped",
   description:
-    "Paste your app's address and Greenlit checks it for the five gaps that most often turn up in apps built with AI coding tools. Free, no account.",
+    "Paste your app's address and Snaglist checks it for the five gaps that most often turn up in apps built with AI coding tools. Free, no account.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

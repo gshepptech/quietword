@@ -34,7 +34,7 @@ export function normaliseTarget(input: string): NormalisedTarget {
   }
 
   if (url.protocol !== "http:" && url.protocol !== "https:") {
-    return { ok: false, reason: "Greenlit only scans addresses starting with http or https." };
+    return { ok: false, reason: "Snaglist only scans addresses starting with http or https." };
   }
   if (url.username !== "" || url.password !== "") {
     return { ok: false, reason: "Remove the username and password from the address before scanning." };
@@ -44,7 +44,7 @@ export function normaliseTarget(input: string): NormalisedTarget {
   if (hostReason) {
     return {
       ok: false,
-      reason: `Greenlit only scans apps that are live on the public internet. That address points at ${hostReason}.`,
+      reason: `Snaglist only scans apps that are live on the public internet. That address points at ${hostReason}.`,
     };
   }
 

@@ -1,5 +1,5 @@
 /**
- * Rate limiting for Greenlit's own scan endpoint.
+ * Rate limiting for Snaglist's own scan endpoint.
  *
  * In memory, which means it resets on restart and does not hold across more
  * than one instance. That is the right size for an MVP running on one box and

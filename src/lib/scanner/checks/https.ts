@@ -68,7 +68,7 @@ export function evaluateHttps(evidence: HttpsEvidence): HttpsAssessment {
 const TITLE = "Whether your app forces a secure connection";
 
 const METHOD =
-  "Greenlit loaded your app over a secure connection and then asked for the same address over an insecure one, without following any redirect, to see what the server does with it. It also read the header that tells browsers to refuse the insecure version in future.";
+  "Snaglist loaded your app over a secure connection and then asked for the same address over an insecure one, without following any redirect, to see what the server does with it. It also read the header that tells browsers to refuse the insecure version in future.";
 
 export const httpsCheck: Check = {
   id: "https",
@@ -185,7 +185,7 @@ export const httpsCheck: Check = {
 
       default:
         return notChecked("https", TITLE, {
-          headline: "Greenlit could not tell what your app does with insecure connections.",
+          headline: "Snaglist could not tell what your app does with insecure connections.",
           why: "The secure version answered, but the insecure request did not come back with anything to judge.",
           nextStep: "Run the scan again in a few minutes.",
           method: METHOD,
