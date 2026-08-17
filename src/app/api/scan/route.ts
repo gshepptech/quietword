@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { beginScan, endScan, releaseScanSlot, takeScanSlot } from "@/lib/ratelimit";
+import { clientKey } from "@/lib/client-key";
 import { normaliseTarget, runScan, TargetUnreachableError } from "@/lib/scanner";
 
 // The scan resolves DNS and opens sockets, so it needs the Node runtime. It is
@@ -21,12 +22,6 @@ function readBody(value: unknown): ScanRequest | string {
     return "Tick the box to confirm you own this app or have permission to test it.";
   }
   return { url: body["url"], consent: true };
-}
-
-function clientKey(request: Request): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0]!.trim();
-  return request.headers.get("x-real-ip") ?? "unknown";
 }
 
 export async function POST(request: Request): Promise<NextResponse> {

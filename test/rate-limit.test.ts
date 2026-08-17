@@ -8,6 +8,38 @@ const answered = (status: number, headers: Record<string, string> = {}): Observe
 });
 
 describe("detectLimiter", () => {
+  it("does not call retry-after alone a limiter", () => {
+    // Varnish answers POST /api/auth/login on a static site with 405 and
+    // retry-after: 0. This once produced a high-confidence pass on a site with
+    // no backend, which is the worst thing this product can do.
+    const evidence = detectLimiter([
+      answered(405, { "retry-after": "0" }),
+      answered(405, { "retry-after": "0" }),
+    ]);
+    expect(evidence.limited).toBe(false);
+    expect(evidence.reasons).toEqual([]);
+  });
+
+  it("does not treat retry-after on a 503 as a limiter either", () => {
+    expect(detectLimiter([answered(503, { "retry-after": "120" })]).limited).toBe(false);
+  });
+
+  it("counts retry-after once something else corroborates it", () => {
+    const evidence = detectLimiter([
+      answered(429, { "retry-after": "60", "ratelimit-remaining": "0" }),
+    ]);
+    expect(evidence.limited).toBe(true);
+    expect(evidence.reasons.join(" ")).toContain("retry-after");
+  });
+
+  it("omits retry-after from the evidence when nothing corroborates it", () => {
+    const evidence = detectLimiter([
+      answered(200, { "retry-after": "0", "ratelimit-remaining": "9" }),
+    ]);
+    expect(evidence.limited).toBe(true);
+    expect(evidence.reasons.join(" ")).toContain("ratelimit-remaining");
+  });
+
   it("sees a limiter that turns requests away", () => {
     const evidence = detectLimiter([
       answered(401),

@@ -26,8 +26,11 @@ export const COMMON_AUTH_PATHS = [
 
 const AUTH_SHAPED = /(login|signin|sign-in|signup|sign-up|register|forgot|reset|password|otp|magic|verify|waitlist|subscribe|contact)/i;
 
+/**
+ * Headers that only a rate limiter sends. Presence of one of these is direct
+ * evidence on its own.
+ */
 const LIMIT_HEADERS = [
-  "retry-after",
   "ratelimit",
   "ratelimit-limit",
   "ratelimit-remaining",
@@ -37,6 +40,17 @@ const LIMIT_HEADERS = [
   "x-rate-limit-limit",
   "x-rate-limit-remaining",
 ];
+
+/**
+ * `retry-after` is not one of them. It is defined for 503 and 3xx as well as 429,
+ * and CDNs send it routinely on responses that have nothing to do with limiting.
+ * Varnish answers `POST /api/auth/login` on a static site with `405` and
+ * `retry-after: 0`, which is how this check once reported a login endpoint as
+ * protected on a site that has no backend at all.
+ *
+ * So it counts only alongside something that does mean a limiter.
+ */
+const AMBIGUOUS_LIMIT_HEADERS = ["retry-after"];
 
 export interface ObservedResponse {
   status: number;
@@ -67,8 +81,19 @@ export function detectLimiter(responses: ObservedResponse[]): LimiterEvidence {
       if (response.headers[name] !== undefined) headers.add(name);
     }
   }
+
+  // Ambiguous headers ride along with real evidence and never stand alone.
+  const ambiguous = new Set<string>();
+  for (const response of responses) {
+    for (const name of AMBIGUOUS_LIMIT_HEADERS) {
+      if (response.headers[name] !== undefined) ambiguous.add(name);
+    }
+  }
+  const corroborated = refused > 0 || headers.size > 0;
+  const named = [...headers, ...(corroborated ? ambiguous : [])].sort();
+
   if (headers.size > 0) {
-    reasons.push(`the server sent rate limit headers (${[...headers].sort().join(", ")})`);
+    reasons.push(`the server sent rate limit headers (${named.join(", ")})`);
   }
 
   return { limited: reasons.length > 0, reasons };
@@ -118,6 +143,10 @@ export const rateLimitCheck: Check = {
         continue;
       }
       if (response.status === 404 || response.status === 410) continue;
+      // 405 and 501 mean this path does not accept a POST, so it is not a login
+      // endpoint however much its name looks like one. A static host answers
+      // every unknown POST this way.
+      if (response.status === 405 || response.status === 501) continue;
       if (/text\/html/i.test(response.headers["content-type"] ?? "")) continue;
 
       endpoint = path;
