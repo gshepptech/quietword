@@ -21,8 +21,8 @@ export function middleware(request: NextRequest): NextResponse {
   const csp = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
-    // Next inlines critical CSS. Styles cannot execute, so the risk is
-    // presentational rather than script execution.
+    // Next inlines the first-paint CSS. Styles cannot execute, so the risk
+    // here is presentational rather than script execution.
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data:",
     "font-src 'self'",
