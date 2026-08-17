@@ -33,7 +33,21 @@ const MARKERS: Marker[] = [
   { kind: "a database error", regex: /duplicate key value violates unique constraint|relation "[^"]+" does not exist|column "[^"]+" does not exist/ },
   { kind: "an ORM error with your query in it", regex: /PrismaClient\w*Error|Invalid `prisma\.|DrizzleQueryError|TypeORMError/ },
   { kind: "a framework debug page", regex: /Werkzeug Debugger|Whoops\\\\?Run|Whoops, looks like something went wrong|ActionView::Template::Error|Symfony\\\\Component\\\\|Illuminate\\\\Foundation/ },
-  { kind: "a file path from your server", regex: /(?:\/(?:home|Users|var\/www|srv|app|usr\/src|workspace)\/)[\w.\-/]{3,}\.(?:js|mjs|cjs|ts|tsx|jsx|py|rb|php|go|java|cs|rs)\b/ },
+  // Directories that are almost never the start of a URL path, so a match on
+  // its own is enough.
+  { kind: "a file path from your server", regex: /(?:\/(?:home|Users|var\/www|usr\/src|usr\/local\/src)\/)[\w.\-/]{3,}\.(?:js|mjs|cjs|ts|tsx|jsx|py|rb|php|go|java|cs|rs)\b/ },
+
+  // `/app/`, `/srv/` and `/workspace/` are ordinary URL bases. Vite's
+  // `base: '/app/'` puts `<script src="/app/assets/index-a1b2c3.js">` on the
+  // page of a correctly built app, and matching that told the owner their app
+  // was leaking server paths, quoting their own script tag back as proof.
+  //
+  // So these need corroboration: a line and column, or a stack frame, neither
+  // of which appears in a markup attribute.
+  {
+    kind: "a file path from your server",
+    regex: /(?:\bat\s+|\bfrom\s+|\(|^\s*)\/(?:app|srv|workspace)\/[\w.\-/]{3,}\.(?:js|mjs|cjs|ts|tsx|jsx|py|rb|php|go|java|cs|rs)(?::\d+(?::\d+)?)/m,
+  },
   { kind: "a file path from your server", regex: /[A-Za-z]:\\(?:Users|inetpub|wwwroot|app)\\[\w.\\-]{3,}\.(?:js|ts|py|rb|php|cs)\b/ },
   { kind: "an environment variable with a value in it", regex: /\b(?:DATABASE_URL|SUPABASE_SERVICE_ROLE_KEY|AWS_SECRET_ACCESS_KEY|JWT_SECRET|SESSION_SECRET)\s*[:=]\s*\S{6,}/ },
 ];

@@ -89,3 +89,41 @@ describe("shouldInspect", () => {
     expect(shouldInspect(200, "text/html")).toBe(false);
   });
 });
+
+describe("file paths versus URL paths", () => {
+  it("does not call a script tag on an /app/ base path a leak", () => {
+    // Vite with base: '/app/' emits exactly this on a correctly built app. The
+    // check used to quote the owner's own script tag back at them as evidence
+    // that their server was leaking file paths.
+    const page = `<script type="module" crossorigin src="/app/assets/index-a1b2c3.js"></script><h1>404 Not Found</h1>`;
+    expect(findLeak(page)).toBeNull();
+  });
+
+  it("leaves /srv/ and /workspace/ script tags alone too", () => {
+    expect(findLeak(`<script src="/srv/static/main.js"></script>`)).toBeNull();
+    expect(findLeak(`<link href="/workspace/dist/app.js">`)).toBeNull();
+  });
+
+  it("still catches an /app/ path in a real stack frame", () => {
+    // Reported as a stack trace rather than a bare path, because the stack
+    // pattern matches first and is the more accurate label. Either way it is
+    // a finding, which is what matters.
+    const trace = `TypeError: undefined is not a function\n    at handler (/app/dist/server.js:42:17)`;
+    expect(findLeak(trace)).not.toBeNull();
+  });
+
+  it("catches an /app/ path with a line number outside a stack trace", () => {
+    expect(findLeak(`Failed to compile (/app/src/routes/index.ts:12:4)`)?.kind).toBe(
+      "a file path from your server",
+    );
+  });
+
+  it("still catches a home directory path with no corroboration needed", () => {
+    expect(findLeak(`Error loading /Users/greg/projects/api/src/index.ts`)?.kind).toBe(
+      "a file path from your server",
+    );
+    expect(findLeak(`require failed: /home/runner/work/app/build/main.js`)?.kind).toBe(
+      "a file path from your server",
+    );
+  });
+});
