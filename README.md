@@ -100,4 +100,8 @@ the tests exercise, because a false pass would come from there.
 
 ## Licence
 
-Not chosen yet.
+Proprietary, all rights reserved. See `LICENCE`.
+
+Deliberately not open source: this sends deliberate request bursts at whatever
+address it is given, and the licence carries the disclaimers that go with that.
+Opening it later is easy; closing it again is not.
