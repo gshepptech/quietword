@@ -18,17 +18,23 @@ SiteGuard, AppGuard, and a long tail below them). It reads as an enterprise secu
 exactly the register this audience finds intimidating. A founder who has never had a security
 conversation does not want to buy from a vendor with a shield in its logo.
 
-**Snaglist.** Names the thing the user actually wants: permission to launch. It sits in
-launch-readiness language rather than security-vendor language, which matches how the product is
-positioned. It is one word, it is a verb ("get your app snaglist"), and it carries no fear.
+**Snaglist.** A snagging list is what an inspector writes before a new building is handed over:
+the list of defects to put right, not a certificate that the building is sound. That is exactly
+what this product produces, and the name says so before any copy has to. It sits in
+launch-readiness language rather than security-vendor language, it is one word, and it carries no
+fear.
 
 Chosen: **Snaglist**.
 
-The honest objection to Snaglist is that it implies approval, and the product explicitly must not
-imply that a free five-check scan is a full audit. That tension is real and it is handled in copy
-rather than by changing the name: the report never says "your app is secure" or "you are snaglist".
-It says which of the five checks came back clean, and it says plainly that five checks is not an
-audit. The word "snaglist" is the brand, not a verdict the product ever issues. This is carried into
+The name was Greenlit until 25 July 2026. Dropped because Veracode holds a trademark on Greenlight
+for security scanning software, and greenlit.io and getgreenlit.xyz are both live products.
+
+Greenlit had a problem that Snaglist does not, and it is worth recording because it shaped the
+copy rules. Greenlit meant permission to launch, which is precisely the thing a five-check scan
+must never imply, so the name and the disclaimer pulled against each other and copy had to hold
+the line. Snaglist points the other way: a list of snags is a list of things found, and a short
+list is not a clean bill of health. The report still never says "your app is secure", and it still
+says plainly that five checks is not an audit. This is carried into
 CLAUDE.md as a hard copy rule so a future session does not undo it. See also "Risks and open
 questions".
 
@@ -385,9 +391,10 @@ Two rules specific to this product:
 
 ## 13. Risks and open questions
 
-**The name argues with the disclaimer.** Snaglist implies approval; the product must not imply
-approval. Copy carries the load, and copy is the thing most likely to drift over time. If a future
-session finds itself writing "you're snaglist" in a report, the name lost and it should be revisited.
+**The name has not had a trademark or domain check.** Snaglist is coherent with what the product
+does, unlike the name it replaced, but nobody has checked whether it is available or defensible.
+Do that before spending money on it. Bare "Snag" was already rejected for this reason: SNAG LLC
+holds a registered software mark and Snagit is well known.
 
 **The rate limit check will produce false findings.** A 10-request burst cannot distinguish "no limiter"
 from "limiter set at 20". Reported at medium confidence with the method stated in the report, but some
