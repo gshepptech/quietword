@@ -2,6 +2,19 @@ import { Scanner } from "@/components/scanner";
 
 import { REVIEW_CONTACT, REVIEW_PRICE } from "@/lib/review";
 
+/**
+ * Rendered per request so the content security policy can carry a fresh nonce.
+ *
+ * A prerendered page is built once, so there is no request to derive a nonce
+ * from, and Next emits its script tags without one. The browser then refuses
+ * every chunk and the form never hydrates. The alternative is 'unsafe-inline'
+ * on scripts, which would switch off the part of the policy that matters, on a
+ * product whose job is telling people about exactly this.
+ *
+ * The cost is small: one page, a few kilobytes, and no data to cache.
+ */
+export const dynamic = "force-dynamic";
+
 const CHECKS = [
   {
     title: "Keys and passwords in your app's code",
