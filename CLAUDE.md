@@ -22,8 +22,10 @@ and price accordingly: the scan stays free forever, the review is what pays.
 
 ## 2. Hard guardrails (non-negotiable)
 
-- **Local git only.** Commit locally. Never run `git remote add`, never `git push`, never
-  `gh repo create`, never any command that publishes this code. No remote of any kind.
+- **Private remote only.** A private GitHub repository under `gshepptech` is the backup, and
+  pushing to it is expected. Never make the repository public and never add a second remote.
+  This scanner sends deliberate request bursts at third-party servers, so the source becoming
+  public is a different kind of problem from an ordinary leak.
 - **No attribution to Claude, Claude Code, or Anthropic anywhere.** Not in commit messages, not in
   trailers, not in `Co-Authored-By`, not in README badges, not in code comments, not in package
   metadata. No exceptions. Commits are authored by the repo owner and read like a person wrote them.
