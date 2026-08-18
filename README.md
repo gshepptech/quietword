@@ -1,5 +1,7 @@
 # Snaglist
 
+![Snaglist report: a finding written in plain language, alongside the five checks and what each one came back as.](assets/hero.png)
+
 A free security scan for people who built an app with AI coding tools and have never had anyone check
 it for holes. Paste a live URL, get a plain-language report on five things that commonly go wrong.
 
