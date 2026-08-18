@@ -1,6 +1,6 @@
 # Snaglist
 
-![The Snaglist report: "Two checks found something worth fixing. One could not be run at all," followed by the first finding, why it matters and what to do about it.](assets/hero.png)
+![The Snaglist report: "One check found something worth fixing. One could not be run at all," then the first three checks, one marked worth fixing, one looks fine and one not checked, each with why it matters and what to do.](assets/hero.png)
 
 A free security scan for people who built an app with AI coding tools and have never had anyone check
 it for holes. Paste a live URL, get a plain-language report on five things that commonly go wrong.
