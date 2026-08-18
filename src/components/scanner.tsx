@@ -58,13 +58,13 @@ export function Scanner() {
 
   return (
     <div>
-      <form onSubmit={onSubmit} className="border border-line bg-surface">
-        <div className="border-b border-line px-5 py-3">
+      <form onSubmit={onSubmit} className="panel panel-raised overflow-hidden">
+        <div className="bg-inset px-5 py-3 sm:px-6">
           <label htmlFor={urlId} className="meta">
             Target address
           </label>
         </div>
-        <div className="px-5 py-5">
+        <div className="px-5 py-6 sm:px-6">
         <div className="flex flex-col gap-3 sm:flex-row">
           <input
             id={urlId}
@@ -78,12 +78,12 @@ export function Scanner() {
             onChange={(event) => setUrl(event.target.value)}
             aria-describedby={noteId}
             disabled={running}
-            className="w-full border border-line bg-raised px-3.5 py-2.5 font-mono text-[0.9375rem] text-ink caret-signal placeholder:text-unknown focus-visible:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:text-unknown"
+            className="w-full rounded-[--radius-inset] bg-inset px-4 py-3 font-mono text-[0.9375rem] text-ink caret-signal shadow-[inset_0_1px_2px_rgba(16,21,27,0.07)] placeholder:text-faint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:text-faint"
           />
           <button
             type="submit"
             disabled={running || !consent || url.trim().length === 0}
-            className="shrink-0 bg-ink px-6 py-2.5 text-[0.875rem] font-medium tracking-wide text-surface uppercase transition-colors hover:bg-signal-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:bg-unknown"
+            className="shrink-0 rounded-[--radius-inset] bg-ink px-6 py-3 text-[0.875rem] font-medium text-surface shadow-[0_1px_2px_rgba(16,21,27,0.3)] transition-colors hover:bg-signal-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:bg-faint disabled:shadow-none"
           >
             {running ? "Checking" : "Run the five checks"}
           </button>
@@ -96,7 +96,7 @@ export function Scanner() {
             checked={consent}
             onChange={(event) => setConsent(event.target.checked)}
             disabled={running}
-            className="mt-2.5 size-4 shrink-0 accent-[#131619] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed"
+            className="mt-2.5 size-4 shrink-0 accent-[#10151b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed"
           />
           <label
             htmlFor={consentId}
@@ -106,7 +106,7 @@ export function Scanner() {
           </label>
         </div>
 
-        <p id={noteId} className="mt-5 border-t border-line pt-4 text-[0.8125rem] text-muted">
+        <p id={noteId} className="mt-6 border-t border-line pt-4 text-[0.8125rem] text-muted">
           Quietword sends about thirty requests from its own server, over roughly twenty seconds. It
           never signs in, never sends anything designed to break your app, and refuses any address on
           a private network.
@@ -125,14 +125,14 @@ export function Scanner() {
           <div className="mt-8">
             <p className="meta">Running five checks · up to 25s</p>
             <div
-              className="scan-progress relative mt-3 h-[2px] overflow-hidden bg-line"
+              className="scan-progress relative mt-3 h-1.5 overflow-hidden rounded-full bg-ground-deep"
               role="presentation"
             />
           </div>
         )}
 
         {state.status === "error" && (
-          <p className="mt-8 border border-line border-l-2 border-l-signal bg-surface p-4 text-[0.875rem]">
+          <p className="panel mt-8 border-l-2 border-l-signal p-4 text-[0.875rem]">
             {state.message}
           </p>
         )}

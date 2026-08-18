@@ -1,39 +1,74 @@
 @import "tailwindcss";
 
 /*
-  Precision instrument, not a security console and not a letter.
+  Quietword's look, and the reasoning, because this is the third direction and
+  the first two both failed for reasons worth not repeating.
 
-  The first version was warm paper and ink. The reasoning was sound (a founder
-  reading that their admin route is open should not feel shouted at) but it
-  produced a page nobody believed had scanned anything, and cream plus a serif
-  plus a sage green has since become its own template. So: a cool graphite
-  panel, white cards, hairlines, and numbers that are allowed to look like
-  numbers.
+  Warm paper with a serif was the original. It read as a letter, which was the
+  intent, but nobody believed it had scanned anything, and cream plus a serif
+  plus a sage green has since become the house style of tasteful machine output.
 
-  The calm is now carried by restraint rather than by warmth. There is one
-  signal colour and it is only ever spent on a finding. Nothing glows, nothing
-  is red-on-black, and no verdict is carried by colour alone.
+  Hairline rules on flat grey replaced it and was worse: no depth, no radius, one
+  type size doing every job. That is a broadsheet pastiche, and up close it just
+  reads as unstyled markup with borders on it.
+
+  What is actually here now:
+
+  Type carries meaning, not just hierarchy. Mono is reserved for things the
+  scanner measured: addresses, counts, timings, header values, evidence. Sans is
+  for things a person wrote about those measurements. A reader learns the rule
+  without being told it, and it is the reason the page reads as an instrument
+  rather than as a brochure about one.
+
+  Quiet until it is not. The whole surface runs at low contrast, and the signal
+  colour appears only where a check found something. On a clean scan the page is
+  almost monochrome. That is the brand argument made in paint: a quiet word,
+  raised only when there is something to raise it about.
+
+  Depth is structural. Cards sit above the ground on a real shadow with a light
+  top edge, so the eye reads panels rather than boxes. This is what the flat
+  version was missing and it is doing most of the work.
 */
 @theme {
-  --color-ground: #e7e9eb;
-  --color-surface: #ffffff;
-  --color-raised: #f3f5f6;
-  --color-ink: #131619;
-  --color-muted: #596069;
-  --color-line: #ced3d8;
-  --color-hairline: #99a1a9;
+  /* Ground is a cool mineral grey, mixed slightly blue so it reads as coated
+     metal rather than as the default neutral of a component library. */
+  --color-ground: #dfe3e7;
+  --color-ground-deep: #cdd3d9;
+  --color-surface: #fdfdfe;
+  --color-inset: #eef1f4;
 
-  /* Verdicts. One each, and the word is always next to the colour. */
-  --color-signal: #b8371a;
-  --color-signal-deep: #8e2810;
-  --color-clean: #0e6b55;
-  --color-unknown: #6b727a;
+  /* Every one of these is measured against ground, inset and surface, and the
+     lowest ratio in the set is 4.51, so all body and label text clears WCAG AA.
+     faint is deliberately only 1.32 lighter than muted: labels stay subordinate
+     through size, weight and letterspacing rather than by fading out, because a
+     label pale enough to look secondary is a label too pale to read. */
+  --color-ink: #10151b;
+  --color-ink-soft: #313d4b;
+  --color-muted: #48535f;
+  --color-faint: #5b6571;
+  --color-line: #d3dae1;
+  --color-edge: #ffffff;
 
-  --color-focus: #9a6400;
+  /* One signal, spent only on a finding. */
+  --color-signal: #b8380f;
+  --color-signal-deep: #922c0e;
+  --color-signal-wash: #fbeae4;
+  --color-clean: #0d6a58;
+  --color-unknown: #5c656f;
+  --color-focus: #8a5a00;
 
   --font-display: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
   --font-sans: var(--font-plex-sans), system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", monospace;
+
+  --radius-panel: 6px;
+  --radius-inset: 4px;
+
+  /* Cool-toned, layered, and never a glow. */
+  --shadow-panel: 0 1px 1px rgba(16, 21, 27, 0.04), 0 3px 8px -2px rgba(16, 21, 27, 0.07),
+    0 12px 28px -12px rgba(16, 21, 27, 0.14);
+  --shadow-raised: 0 1px 1px rgba(16, 21, 27, 0.05), 0 6px 14px -4px rgba(16, 21, 27, 0.1),
+    0 22px 44px -18px rgba(16, 21, 27, 0.2);
 }
 
 @layer base {
@@ -47,10 +82,18 @@
 
   body {
     background-color: var(--color-ground);
+    /* A single soft cast from the top, so the ground reads as a lit surface
+       rather than as a flat fill. */
+    background-image: radial-gradient(
+      120% 80% at 50% -10%,
+      rgba(255, 255, 255, 0.7) 0%,
+      rgba(255, 255, 255, 0) 60%
+    );
+    background-attachment: fixed;
     color: var(--color-ink);
     font-family: var(--font-sans);
     font-size: 0.9375rem;
-    line-height: 1.55;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -59,62 +102,98 @@
   h3 {
     font-family: var(--font-display);
     font-weight: 700;
-    letter-spacing: -0.021em;
-    line-height: 1.08;
+    letter-spacing: -0.03em;
+    line-height: 1.02;
     text-wrap: balance;
   }
 
-  /* One focus treatment everywhere, and it is always visible. */
   :focus-visible {
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;
-    border-radius: 0;
+    border-radius: 2px;
   }
 
   ::selection {
-    background-color: #cfd6db;
+    background-color: #c6d2dd;
   }
 }
 
 @layer components {
   /*
-    Small caps mono, used for every label and every piece of instrument
-    chrome. It is the one thing repeated often enough to read as a system.
+    Mono, small, tracked out. Used for every label, and only ever on something
+    the scanner measured or a name for such a thing.
   */
   .meta {
     font-family: var(--font-mono);
     font-size: 0.6875rem;
-    letter-spacing: 0.14em;
+    font-weight: 500;
+    letter-spacing: 0.11em;
     text-transform: uppercase;
-    color: var(--color-muted);
+    color: var(--color-faint);
   }
 
-  /* Tabular figures, so counts and timings line up column to column. */
   .tnum {
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum" 1;
   }
 
   /*
-    Indeterminate progress. It is here because the scan takes long enough that a
-    still page reads as broken, not as decoration.
+    A panel: white, rounded, lifted off the ground, with a light top edge so the
+    lift reads as an edge catching light rather than as a drop shadow bolted on.
   */
+  .panel {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-panel);
+    position: relative;
+  }
+
+  .panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(to bottom, var(--color-edge), rgba(211, 218, 225, 0.9) 40%);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .panel-raised {
+    box-shadow: var(--shadow-raised);
+  }
+
+  /* The meter: a segmented accounting of the scan's own cost. */
+  .tick {
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--color-line) 0 1px,
+      transparent 1px 100%
+    );
+    background-size: 10% 100%;
+  }
+
   .scan-progress::after {
     content: "";
     position: absolute;
     inset-block: 0;
-    inline-size: 28%;
+    inline-size: 24%;
+    border-radius: 999px;
     background-color: var(--color-ink);
-    animation: scan-sweep 1.4s ease-in-out infinite;
+    animation: scan-sweep 1.4s cubic-bezier(0.5, 0, 0.5, 1) infinite;
   }
 }
 
 @keyframes scan-sweep {
   0% {
-    transform: translateX(-100%);
+    transform: translateX(-110%);
   }
   100% {
-    transform: translateX(360%);
+    transform: translateX(430%);
   }
 }
 
@@ -122,6 +201,6 @@
   .scan-progress::after {
     animation: none;
     inline-size: 100%;
-    opacity: 0.3;
+    opacity: 0.28;
   }
 }

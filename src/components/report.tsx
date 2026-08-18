@@ -7,24 +7,12 @@ const VERDICT_LABEL: Record<Verdict, string> = {
   not_checked: "Not checked",
 };
 
-// Colour never carries the verdict on its own. The word is always next to it,
-// and the marker has a distinct shape per verdict as well as a distinct colour.
-const VERDICT_STYLE: Record<Verdict, string> = {
+// Colour never carries the verdict alone. Each one has a word, and a marker
+// whose shape differs too, so it survives greyscale and colour blindness both.
+const VERDICT_TEXT: Record<Verdict, string> = {
   attention: "text-signal",
   pass: "text-clean",
   not_checked: "text-unknown",
-};
-
-const MARKER_STYLE: Record<Verdict, string> = {
-  attention: "bg-signal",
-  pass: "bg-clean",
-  not_checked: "bg-unknown",
-};
-
-const EDGE_STYLE: Record<Verdict, string> = {
-  attention: "bg-signal",
-  pass: "bg-clean",
-  not_checked: "bg-unknown",
 };
 
 const CONFIDENCE_LABEL = {
@@ -33,40 +21,51 @@ const CONFIDENCE_LABEL = {
   low: "Low confidence",
 } as const;
 
+function Marker({ verdict }: { verdict: Verdict }) {
+  if (verdict === "attention") {
+    return <span aria-hidden className="size-2 rotate-45 bg-signal" />;
+  }
+  if (verdict === "pass") {
+    return <span aria-hidden className="size-2 rounded-full bg-clean" />;
+  }
+  return <span aria-hidden className="h-[2px] w-2.5 bg-unknown" />;
+}
+
 function Verdict({ verdict }: { verdict: Verdict }) {
   return (
-    <span className={`inline-flex shrink-0 items-center gap-2 ${VERDICT_STYLE[verdict]}`}>
-      <span aria-hidden className={`size-2 ${MARKER_STYLE[verdict]}`} />
+    <span className={`inline-flex shrink-0 items-center gap-2 ${VERDICT_TEXT[verdict]}`}>
+      <Marker verdict={verdict} />
       <span className="meta !text-current">{VERDICT_LABEL[verdict]}</span>
     </span>
   );
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <span className="meta mb-1.5 block">{children}</span>;
+  return <span className="meta mb-2 block">{children}</span>;
 }
 
-function CheckCard({ check, index }: { check: CheckResult; index: number }) {
-  return (
-    <article className="relative border border-line bg-surface">
-      <span aria-hidden className={`absolute inset-y-0 left-0 w-1 ${EDGE_STYLE[check.verdict]}`} />
+function CheckCard({ check }: { check: CheckResult }) {
+  const found = check.verdict === "attention";
 
-      <div className="border-b border-line py-3 pr-5 pl-6">
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <div className="flex items-center gap-3">
-            <span aria-hidden className="meta tnum !text-ink">
-              {String(index + 1).padStart(2, "0")}
-            </span>
-            <h3 className="text-[0.9375rem] tracking-tight uppercase">{check.title}</h3>
-          </div>
-          <Verdict verdict={check.verdict} />
-        </div>
+  return (
+    <article className={`panel overflow-hidden ${found ? "panel-raised" : ""}`}>
+      <div
+        className={`flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-5 py-3.5 sm:px-6 ${
+          found ? "bg-signal-wash" : "bg-inset"
+        }`}
+      >
+        <h3 className="text-[0.9375rem] leading-tight font-semibold tracking-[-0.01em]">
+          {check.title}
+        </h3>
+        <Verdict verdict={check.verdict} />
       </div>
 
-      <div className="px-6 py-5">
-        <p className="max-w-[62ch] text-base leading-snug">{check.headline}</p>
+      <div className="px-5 pt-5 pb-1 sm:px-6">
+        <p className="max-w-[58ch] text-[1.0625rem] leading-[1.45] font-medium text-ink-soft">
+          {check.headline}
+        </p>
 
-        <div className="mt-5 grid gap-x-8 gap-y-5 sm:grid-cols-2">
+        <div className="mt-6 grid gap-x-10 gap-y-6 sm:grid-cols-2">
           <div>
             <Label>Why it matters</Label>
             <p className="text-[0.875rem] text-muted">{check.why}</p>
@@ -78,15 +77,20 @@ function CheckCard({ check, index }: { check: CheckResult; index: number }) {
         </div>
 
         {check.evidence.length > 0 && (
-          <div className="mt-5">
+          <div className="mt-6">
             <Label>
-              Evidence · {check.evidence.length}{" "}
+              What came back · {check.evidence.length}{" "}
               {check.evidence.length === 1 ? "item" : "items"}
             </Label>
-            <ul className="divide-y divide-line border border-line bg-raised">
+            <ul className="space-y-2">
               {check.evidence.map((item, i) => (
-                <li key={`${item.label}-${i}`} className="px-4 py-3">
-                  <span className="font-mono text-[0.8125rem] break-all text-ink">{item.label}</span>
+                <li
+                  key={`${item.label}-${i}`}
+                  className="rounded-[--radius-inset] bg-inset px-4 py-3"
+                >
+                  <span className="font-mono text-[0.8125rem] font-medium break-all text-ink">
+                    {item.label}
+                  </span>
                   <p className="mt-1 text-[0.8125rem] break-words text-muted">{item.detail}</p>
                 </li>
               ))}
@@ -95,12 +99,13 @@ function CheckCard({ check, index }: { check: CheckResult; index: number }) {
         )}
       </div>
 
-      <details className="border-t border-line">
-        <summary className="meta cursor-pointer px-6 py-3 hover:text-ink">
+      <details className="group mt-4">
+        <summary className="meta flex cursor-pointer items-center gap-2 px-5 py-3.5 hover:text-ink sm:px-6">
+          <span aria-hidden className="transition-transform group-open:rotate-90">›</span>
           How Quietword checked this
           {check.verdict !== "not_checked" && ` · ${CONFIDENCE_LABEL[check.confidence]}`}
         </summary>
-        <p className="max-w-[78ch] px-6 pb-5 text-[0.8125rem] text-muted">{check.method}</p>
+        <p className="max-w-[76ch] px-5 pb-5 text-[0.8125rem] text-muted sm:px-6">{check.method}</p>
       </details>
     </article>
   );
@@ -135,65 +140,88 @@ function summaryLine(report: ScanReport): string {
 }
 
 /**
- * The instrument strip. What was scanned, how much traffic it cost, and the
- * three counts. It is the first thing that says a machine did measurable work,
- * which the previous version left entirely to prose.
+ * The signature. Every other scanner reports what it found; this one also
+ * reports what it cost, because refusing to hammer somebody's server is the
+ * guardrail this product actually sells. The meter is the request budget drawn
+ * to scale against its own ceiling, which is a fact no competitor puts on the
+ * page and which is only interesting because the ceiling is real.
  */
-function Readout({ report }: { report: ScanReport }) {
+function Ledger({ report }: { report: ScanReport }) {
   const seconds = Math.max(1, Math.round(report.durationMs / 1000));
-  // Target gets two columns because it is the one value someone reads back to
-  // check it scanned the right thing, and an elided hostname cannot do that job.
-  const cells: [string, string, string][] = [
-    ["Target", report.target.replace(/^https?:\/\//, ""), "col-span-2"],
-    ["Requests", `${report.budget.requestsUsed} of ${report.budget.requestLimit}`, ""],
-    ["Elapsed", `${seconds}s`, ""],
-    ["Worth fixing", String(report.summary.attention), ""],
-    ["Looks fine", String(report.summary.passed), ""],
-    ["Not checked", String(report.summary.notChecked), ""],
-  ];
+  const spent = report.budget.requestsUsed;
+  const limit = report.budget.requestLimit;
+  const pct = Math.min(100, Math.round((spent / limit) * 100));
 
   return (
-    <dl className="grid grid-cols-2 border border-line bg-surface sm:grid-cols-4 lg:grid-cols-7">
-      {cells.map(([term, value, span]) => (
-        <div key={term} className={`border-r border-b border-line px-4 py-3 ${span}`}>
-          <dt className="meta">{term}</dt>
-          <dd className="tnum mt-1 font-mono text-[0.8125rem] break-all text-ink">{value}</dd>
-        </div>
-      ))}
-    </dl>
+    <div className="panel px-5 py-5 sm:px-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+        <span className="meta">Requests spent on your server</span>
+        <span className="tnum font-mono text-[0.8125rem] text-muted">
+          <span className="text-ink">{spent}</span> of {limit} · {seconds}s elapsed
+        </span>
+      </div>
+
+      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-ground-deep">
+        <div
+          className="tick h-full rounded-full bg-ink"
+          style={{ width: `${Math.max(pct, 4)}%` }}
+        />
+      </div>
+
+      <dl className="mt-5 grid grid-cols-3 gap-4 border-t border-line pt-4">
+        {(
+          [
+            ["Worth fixing", report.summary.attention, "attention"],
+            ["Looks fine", report.summary.passed, "pass"],
+            ["Not checked", report.summary.notChecked, "not_checked"],
+          ] as [string, number, Verdict][]
+        ).map(([term, value, verdict]) => (
+          <div key={term}>
+            <dt className="meta flex items-center gap-1.5">
+              <Marker verdict={verdict} />
+              {term}
+            </dt>
+            <dd
+              className={`tnum mt-1.5 font-display text-2xl leading-none font-bold ${
+                value > 0 && verdict === "attention" ? "text-signal" : "text-ink"
+              }`}
+            >
+              {value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
   );
 }
 
 export function Report({ report }: { report: ScanReport }) {
   return (
-    <section className="mt-10">
+    <section className="mt-12">
       <header>
-        <div className="flex items-baseline gap-3">
-          <span aria-hidden className="h-3 w-3 bg-ink" />
-          <span className="meta">Scan complete</span>
-        </div>
-        <h2 className="mt-3 max-w-[24ch] text-2xl sm:text-3xl">{summaryLine(report)}</h2>
+        <span className="meta">Scan complete · {report.target.replace(/^https?:\/\//, "")}</span>
+        <h2 className="mt-3 max-w-[20ch] text-[2rem] sm:text-[2.5rem]">{summaryLine(report)}</h2>
       </header>
 
-      <div className="mt-5">
-        <Readout report={report} />
+      <div className="mt-6">
+        <Ledger report={report} />
       </div>
 
-      <p className="mt-4 max-w-[72ch] text-[0.875rem] text-muted">
+      <p className="mt-5 max-w-[68ch] text-[0.875rem] text-muted">
         Five checks is not a security audit. Quietword tested what your app shows the outside world.
         It did not see your database rules, your dependencies, or anything behind your login.
       </p>
 
       {report.budget.ranOut && (
-        <p className="mt-3 max-w-[72ch] border-l-2 border-focus bg-surface py-2 pl-3 text-[0.875rem] text-muted">
+        <p className="mt-4 max-w-[68ch] rounded-[--radius-inset] border-l-2 border-focus bg-surface py-3 pr-4 pl-4 text-[0.875rem] text-muted">
           The scan hit its own limit before it finished, so some checks are marked not checked
           rather than passed. Running it again usually gets further.
         </p>
       )}
 
-      <div className="mt-6 space-y-3">
-        {report.checks.map((check, index) => (
-          <CheckCard key={check.id} check={check} index={index} />
+      <div className="mt-8 space-y-4">
+        {report.checks.map((check) => (
+          <CheckCard key={check.id} check={check} />
         ))}
       </div>
 
@@ -209,21 +237,22 @@ export function Report({ report }: { report: ScanReport }) {
  */
 function ReviewOffer({ found }: { found: boolean }) {
   return (
-    <aside className="mt-10 border-t-2 border-ink pt-6">
+    <aside className="panel mt-10 px-6 py-7 sm:px-8 sm:py-8">
       <span className="meta">The part a scanner cannot do</span>
-      <h3 className="mt-2 max-w-[26ch] text-xl sm:text-2xl">
+      <h3 className="mt-2.5 max-w-[24ch] text-[1.5rem] sm:text-[1.75rem]">
         {found ? "Want someone to look at this properly?" : "The scan only sees the outside"}
       </h3>
-      <p className="mt-3 max-w-[72ch] text-[0.875rem] text-muted">
+      <p className="mt-4 max-w-[66ch] text-[0.9375rem] text-muted">
         {found
           ? `I go through the app by hand, work out which of these actually matter for your app rather than in general, and write it up in the same plain language. You get a list of what to fix, in the order I would fix it. ${REVIEW_PRICE}, usually back within three days.`
           : `Five checks passing means nothing obvious is showing from out here. It says nothing about your database rules, your dependencies, or the code behind your login. I go through those by hand and write up what I find in plain language. ${REVIEW_PRICE}, usually back within three days.`}
       </p>
       <a
         href={REVIEW_CONTACT}
-        className="mt-5 inline-block bg-ink px-5 py-2.5 text-[0.875rem] font-medium text-surface hover:bg-signal-deep"
+        className="mt-6 inline-flex items-center gap-2 rounded-[--radius-inset] bg-ink px-5 py-3 text-[0.875rem] font-medium text-surface shadow-[0_1px_2px_rgba(16,21,27,0.3)] transition-colors hover:bg-signal-deep"
       >
         Send me the app to review
+        <span aria-hidden>→</span>
       </a>
     </aside>
   );

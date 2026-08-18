@@ -41,7 +41,7 @@ const CHECKS = [
 export default function Home() {
   return (
     <div className="min-h-dvh">
-      <header className="border-b border-line bg-surface">
+      <header className="border-b border-line bg-surface/70 backdrop-blur-sm">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 px-6 py-3.5">
           <div className="flex items-center gap-2.5">
             <span aria-hidden className="size-3 bg-ink" />
@@ -55,10 +55,10 @@ export default function Home() {
 
       <main className="mx-auto max-w-4xl px-6 py-12 sm:py-16">
         <span className="meta">Five checks · no account · no install</span>
-        <h1 className="mt-3 max-w-[16ch] text-4xl sm:text-5xl">
+        <h1 className="mt-3 max-w-[15ch] text-[2.75rem] sm:text-[3.5rem]">
           Find out what your app shows a stranger.
         </h1>
-        <p className="mt-5 max-w-[68ch] text-base text-muted">
+        <p className="mt-5 max-w-[64ch] text-base text-muted">
           Paste the address of an app you built. Quietword checks it for the five gaps that turn up
           most often in apps written with AI coding tools, then tells you what it found in plain
           language.
@@ -69,27 +69,22 @@ export default function Home() {
         </div>
 
         <section className="mt-16">
-          <h2 className="text-lg tracking-tight uppercase">What Quietword looks at</h2>
-          <ol className="mt-4 border border-line bg-surface">
-            {CHECKS.map((check, index) => (
+          <h2 className="text-xl">What Quietword looks at</h2>
+          <ol className="panel mt-5 overflow-hidden">
+            {CHECKS.map((check) => (
               <li
                 key={check.title}
-                className="flex gap-4 border-b border-line px-5 py-4 last:border-b-0"
+                className="border-b border-line px-5 py-4 last:border-b-0 sm:px-6"
               >
-                <span aria-hidden className="meta tnum mt-0.5 !text-ink">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <div>
-                  <h3 className="text-[0.9375rem] font-medium">{check.title}</h3>
-                  <p className="mt-1 text-[0.875rem] text-muted">{check.detail}</p>
-                </div>
+                <h3 className="text-[0.9375rem] font-semibold">{check.title}</h3>
+                <p className="mt-1 text-[0.875rem] text-muted">{check.detail}</p>
               </li>
             ))}
           </ol>
         </section>
 
         <section className="mt-14">
-          <h2 className="text-lg tracking-tight uppercase">What it does not cover</h2>
+          <h2 className="text-xl">What it does not cover</h2>
           <p className="mt-4 max-w-[72ch] text-[0.875rem] text-muted">
             Quietword looks at your app from outside, the same way a stranger would. It cannot see
             your database access rules, your dependencies, the code behind your login, or anything in
@@ -98,9 +93,9 @@ export default function Home() {
           </p>
         </section>
 
-        <section className="mt-14 border-t-2 border-ink pt-7">
+        <section className="panel mt-14 px-6 py-7 sm:px-8 sm:py-8">
           <span className="meta">The part a scanner cannot do</span>
-          <h2 className="mt-2 text-xl sm:text-2xl">Or have a person read it</h2>
+          <h2 className="mt-2.5 text-[1.5rem] sm:text-[1.75rem]">Or have a person read it</h2>
           <p className="mt-4 max-w-[72ch] text-[0.875rem] text-muted">
             The scan is a starting point. A review is me going through your app by hand: the parts
             the scan cannot reach, your database access rules, what your login actually protects,
@@ -113,9 +108,10 @@ export default function Home() {
           </p>
           <a
             href={REVIEW_CONTACT}
-            className="mt-5 inline-block bg-ink px-5 py-2.5 text-[0.875rem] font-medium text-surface hover:bg-signal-deep"
+            className="mt-6 inline-flex items-center gap-2 rounded-[--radius-inset] bg-ink px-5 py-3 text-[0.875rem] font-medium text-surface shadow-[0_1px_2px_rgba(16,21,27,0.3)] transition-colors hover:bg-signal-deep"
           >
             Send me the app to review
+            <span aria-hidden>&rarr;</span>
           </a>
         </section>
       </main>
