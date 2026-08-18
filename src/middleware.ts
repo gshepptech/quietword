@@ -15,25 +15,50 @@ import type { NextRequest } from "next/server";
  * here and stamps it on the scripts it emits. 'strict-dynamic' then lets those
  * scripts load the chunks they need without listing every URL.
  */
-export function middleware(request: NextRequest): NextResponse {
-  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
 
-  const csp = [
+/**
+ * Builds the policy. Split out from the middleware so the production case can be
+ * asserted in a test, because the one thing that must never happen here is
+ * 'unsafe-eval' reaching a deployed build.
+ *
+ * `dev` widens the policy in two places, and only ever locally:
+ *
+ * React Refresh compiles modules by evaluating strings, so without 'unsafe-eval'
+ * it throws an EvalError while the client bundle is starting. That kills
+ * hydration outright, and the result is a page that looks finished and does
+ * nothing: the form renders, the checkbox ticks, and the button stays disabled
+ * because no React state is listening. It cost a while to find, because nothing
+ * about the page suggests the policy is the cause.
+ *
+ * Hot reload also talks to the dev server over a websocket, which
+ * `connect-src 'self'` refuses.
+ */
+export function buildCsp(nonce: string, dev: boolean): string {
+  const scriptSrc = ["'self'", `'nonce-${nonce}'`, "'strict-dynamic'"];
+  if (dev) scriptSrc.push("'unsafe-eval'");
+
+  return [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+    `script-src ${scriptSrc.join(" ")}`,
     // Next inlines the first-paint CSS. Styles cannot execute, so the risk
     // here is presentational rather than script execution.
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data:",
     "font-src 'self'",
-    // The only request this page makes is to its own /api/scan.
-    "connect-src 'self'",
+    // The only request this page makes is to its own /api/scan. In development
+    // it also needs the hot reload websocket.
+    dev ? "connect-src 'self' ws: wss:" : "connect-src 'self'",
     "form-action 'self'",
     "base-uri 'none'",
     "object-src 'none'",
     "frame-ancestors 'none'",
     "upgrade-insecure-requests",
   ].join("; ");
+}
+
+export function middleware(request: NextRequest): NextResponse {
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const csp = buildCsp(nonce, process.env.NODE_ENV !== "production");
 
   // Next reads the nonce out of the policy on the *request* headers, and that
   // is how it knows what to stamp on the script tags it emits. Setting it only

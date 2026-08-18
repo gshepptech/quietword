@@ -25,3 +25,7 @@ tsconfig.tsbuildinfo
 CLAUDE.md
 docs/
 .redpen/
+
+# Browser automation scratch output. It lands in the project root, and writes
+# here retrigger the dev server's file watcher mid-request.
+.playwright-mcp/
