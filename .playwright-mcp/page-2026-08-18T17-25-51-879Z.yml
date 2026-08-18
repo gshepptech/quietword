@@ -1,0 +1,67 @@
+- generic [active] [ref=f1e1]:
+  - generic [ref=f1e2]:
+    - banner [ref=f1e3]:
+      - generic [ref=f1e4]:
+        - generic [ref=f1e5]: Quietword
+        - generic [ref=f1e6]: free scan, or a person reads your app
+    - main [ref=f1e7]:
+      - heading "Find out what your app shows a stranger." [level=1] [ref=f1e8]
+      - paragraph [ref=f1e9]: Paste the address of an app you built. Quietword checks it for the five gaps that turn up most often in apps written with AI coding tools, then tells you what it found in plain language. Nothing to install, no account, no email.
+      - generic [ref=f1e11]:
+        - generic [ref=f1e12]:
+          - generic [ref=f1e13]: Your app’s address
+          - generic [ref=f1e14]:
+            - textbox "Your app’s address" [disabled] [ref=f1e15]:
+              - /placeholder: myapp.com
+              - text: https://focusing-chess-precision-entitled.trycloudflare.com
+            - button "Checking" [disabled] [ref=f1e63]
+          - generic [ref=f1e17]:
+            - checkbox "I own this app, or I have permission from the person who does to test it." [checked] [disabled] [ref=f1e18]
+            - generic [ref=f1e19] [cursor=pointer]: I own this app, or I have permission from the person who does to test it.
+          - paragraph [ref=f1e20]: Quietword sends about thirty requests from its own server, over roughly twenty seconds. It never signs in, never sends anything designed to break your app, and refuses any address on a private network.
+        - paragraph [ref=f1e66]: Running the five checks. This takes up to twenty five seconds.
+      - generic [ref=f1e21]:
+        - heading "What Quietword looks at" [level=2] [ref=f1e22]
+        - list [ref=f1e23]:
+          - listitem [ref=f1e24]:
+            - generic [ref=f1e25]: "01"
+            - generic [ref=f1e26]:
+              - heading "Keys and passwords in your app's code" [level=3] [ref=f1e27]
+              - paragraph [ref=f1e28]: Whether your app is handing private keys to every visitor's browser.
+          - listitem [ref=f1e29]:
+            - generic [ref=f1e30]: "02"
+            - generic [ref=f1e31]:
+              - heading "Data your app hands out without asking who you are" [level=3] [ref=f1e32]
+              - paragraph [ref=f1e33]: Whether any of your API addresses return people's information to a stranger.
+          - listitem [ref=f1e34]:
+            - generic [ref=f1e35]: "03"
+            - generic [ref=f1e36]:
+              - heading "Limits on how fast someone can guess passwords" [level=3] [ref=f1e37]
+              - paragraph [ref=f1e38]: Whether your sign-in page lets someone try thousands of passwords in a row.
+          - listitem [ref=f1e39]:
+            - generic [ref=f1e40]: "04"
+            - generic [ref=f1e41]:
+              - heading "What your app says when something goes wrong" [level=3] [ref=f1e42]
+              - paragraph [ref=f1e43]: Whether your error pages give away file paths and database details.
+          - listitem [ref=f1e44]:
+            - generic [ref=f1e45]: "05"
+            - generic [ref=f1e46]:
+              - heading "Whether your app forces a secure connection" [level=3] [ref=f1e47]
+              - paragraph [ref=f1e48]: Whether someone arriving over an insecure link gets moved to the secure one.
+      - generic [ref=f1e49]:
+        - heading "What it does not cover" [level=2] [ref=f1e50]
+        - paragraph [ref=f1e51]: Quietword looks at your app from outside, the same way a stranger would. It cannot see your database access rules, your dependencies, the code behind your login, or anything in your repository. Five checks catch the problems that come up most. They do not catch every problem.
+      - generic [ref=f1e52]:
+        - heading "Or have a person read it" [level=2] [ref=f1e53]
+        - paragraph [ref=f1e54]: "The scan is a starting point. A review is me going through your app by hand: the parts the scan cannot reach, your database access rules, what your login actually protects, and which of the scan findings matter for your app rather than in general."
+        - paragraph [ref=f1e55]: You get a written list of what to fix, ordered by what I would do first, in the same plain language as the scan. No tooling to install and no code knowledge needed to read it. £150, usually back within three days.
+        - link "Send me the app to review" [ref=f1e56] [cursor=pointer]:
+          - /url: mailto:hello@example.com
+    - contentinfo [ref=f1e57]:
+      - generic [ref=f1e58]:
+        - paragraph [ref=f1e59]: The scan is free and always will be. The review is how this pays for itself. Only scan an app you own or have permission to test.
+        - paragraph [ref=f1e60]:
+          - text: Quietword identifies itself as
+          - code [ref=f1e61]: QuietwordScanner/0.1
+          - text: in your access logs.
+  - alert [ref=f1e62]
