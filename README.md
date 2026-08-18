@@ -5,8 +5,8 @@
 A free security scan for people who built an app with AI coding tools and have never had anyone check
 it for holes. Paste a live URL, get a plain-language report on five things that commonly go wrong.
 
-The audience is a founder who shipped something real with Claude Code, Cursor, Replit, Lovable, or
-Bolt, who can deploy but cannot read a bundle and spot an API key. The report is written for that
+The audience is a founder who shipped something real with an AI coding tool, who can deploy but
+cannot read a bundle and spot an API key. The report is written for that
 person, so it says what someone could do with a finding rather than which header was missing.
 
 ## The five checks
@@ -64,7 +64,8 @@ into the code rather than written on a wall:
 - The form requires a tick confirming you own the app or have permission to test it, and the API
   refuses without it.
 
-Full reasoning is in `docs/foundation.md`, including a section on what these guardrails do not cover.
+These are ceilings, not guidance. A scan cannot exceed them by taking a different path through the
+code.
 
 ## How it is put together
 

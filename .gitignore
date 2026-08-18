@@ -20,3 +20,8 @@ npm-debug.log*
 
 next-env.d.ts
 tsconfig.tsbuildinfo
+
+# Planning and tooling notes, kept locally rather than in the repo
+CLAUDE.md
+docs/
+.redpen/

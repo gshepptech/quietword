@@ -3,8 +3,8 @@
  *
  * In memory, which means it resets on restart and does not hold across more
  * than one instance. That is the right size for an MVP running on one box and
- * the wrong size the moment there are two, so it is written down here and in
- * docs/foundation.md rather than dressed up as something it is not.
+ * the wrong size the moment there are two, so it is written down plainly here
+ * rather than dressed up as something it is not.
  */
 
 export const WINDOW_MS = 15 * 60 * 1000;
