@@ -43,7 +43,7 @@ export default function Home() {
     <div className="min-h-dvh">
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-3xl items-baseline gap-3 px-6 py-5">
-          <span className="font-display text-lg font-semibold tracking-tight">Snaglist</span>
+          <span className="font-display text-lg font-semibold tracking-tight">Quietword</span>
           <span className="font-mono text-xs text-muted">free scan, or a person reads your app</span>
         </div>
       </header>
@@ -53,7 +53,7 @@ export default function Home() {
           Find out what your app shows a stranger.
         </h1>
         <p className="mt-6 max-w-2xl text-lg text-muted">
-          Paste the address of an app you built. Snaglist checks it for the five gaps that turn up
+          Paste the address of an app you built. Quietword checks it for the five gaps that turn up
           most often in apps written with AI coding tools, then tells you what it found in plain
           language. Nothing to install, no account, no email.
         </p>
@@ -63,7 +63,7 @@ export default function Home() {
         </div>
 
         <section className="mt-20">
-          <h2 className="text-2xl">What Snaglist looks at</h2>
+          <h2 className="text-2xl">What Quietword looks at</h2>
           <ol className="mt-6 border-t border-line">
             {CHECKS.map((check, index) => (
               <li key={check.title} className="flex gap-5 border-b border-line py-5">
@@ -82,7 +82,7 @@ export default function Home() {
         <section className="mt-16">
           <h2 className="text-2xl">What it does not cover</h2>
           <p className="mt-5 max-w-2xl text-muted">
-            Snaglist looks at your app from outside, the same way a stranger would. It cannot see
+            Quietword looks at your app from outside, the same way a stranger would. It cannot see
             your database access rules, your dependencies, the code behind your login, or anything in
             your repository. Five checks catch the problems that come up most. They do not catch
             every problem.
@@ -117,8 +117,8 @@ export default function Home() {
             an app you own or have permission to test.
           </p>
           <p className="mt-2">
-            Snaglist identifies itself as{" "}
-            <code className="font-mono text-ink">SnaglistScanner/0.1</code> in your access logs.
+            Quietword identifies itself as{" "}
+            <code className="font-mono text-ink">QuietwordScanner/0.1</code> in your access logs.
           </p>
         </div>
       </footer>

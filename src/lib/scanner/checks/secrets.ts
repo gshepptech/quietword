@@ -154,7 +154,7 @@ export function findSecrets(text: string): SecretFinding[] {
 }
 
 const METHOD =
-  "Snaglist read your page and the JavaScript files it loads, then looked for key formats that belong to specific services such as Stripe, AWS, Supabase, and GitHub. Keys that are meant to be public are recognised and left alone: " +
+  "Quietword read your page and the JavaScript files it loads, then looked for key formats that belong to specific services such as Stripe, AWS, Supabase, and GitHub. Keys that are meant to be public are recognised and left alone: " +
   PUBLIC_BY_DESIGN.join(", ") +
   ". This looks at what your app sends to the browser. It does not look at your code repository.";
 
@@ -168,10 +168,10 @@ export const secretsCheck: Check = {
 
     if (!page || bundleText.trim().length === 0) {
       return notChecked("secrets", TITLE, {
-        headline: "Snaglist could not read your app's code, so this check did not run.",
+        headline: "Quietword could not read your app's code, so this check did not run.",
         why: "Without the page and its JavaScript there is nothing to look at, and guessing would be worse than saying nothing.",
         nextStep: pageError
-          ? `Check the address is right and the app is live. Snaglist got this back: ${pageError}.`
+          ? `Check the address is right and the app is live. Quietword got this back: ${pageError}.`
           : "Check the address is right and that the page loads for someone who is not signed in.",
         method: METHOD,
       });
@@ -209,7 +209,7 @@ export const secretsCheck: Check = {
       headline: "No private keys turned up in the code your app sends to the browser.",
       why: "Keys in frontend code are readable by every visitor, so finding none here is worth having.",
       nextStep:
-        "Medium confidence, because modern apps split their code into pieces that only load on certain pages, and Snaglist only saw the ones your homepage loads. A key used only on an admin page would not show up here.",
+        "Medium confidence, because modern apps split their code into pieces that only load on certain pages, and Quietword only saw the ones your homepage loads. A key used only on an admin page would not show up here.",
       method: `${METHOD} ${scope}`,
     });
   },

@@ -21,7 +21,7 @@ export const LIMITS = {
 
 export const USER_AGENT = (() => {
   const contact = process.env.SCANNER_CONTACT_URL?.trim();
-  return contact ? `SnaglistScanner/0.1 (+${contact})` : "SnaglistScanner/0.1";
+  return contact ? `QuietwordScanner/0.1 (+${contact})` : "QuietwordScanner/0.1";
 })();
 
 export class BlockedAddressError extends Error {

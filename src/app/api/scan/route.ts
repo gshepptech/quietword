@@ -57,7 +57,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (!beginScan()) {
     releaseScanSlot(key);
     return NextResponse.json(
-      { error: "Snaglist is running as many scans as it can handle. Try again in a minute." },
+      { error: "Quietword is running as many scans as it can handle. Try again in a minute." },
       { status: 503, headers: { "retry-after": "60" } },
     );
   }

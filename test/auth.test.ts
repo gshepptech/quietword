@@ -105,12 +105,13 @@ describe("describeCoverage", () => {
   });
 
   it("never reports a number larger than the number it tested", () => {
-    for (const [tested, fromCode, discovered] of [
+    const cases: [tested: number, fromCode: number, discovered: number][] = [
       [8, 8, 14],
       [1, 1, 9],
       [8, 0, 0],
       [5, 2, 2],
-    ]) {
+    ];
+    for (const [tested, fromCode, discovered] of cases) {
       const counts = describeCoverage(tested, fromCode, discovered).match(/\d+/g) ?? [];
       const claimed = counts.map(Number).filter((n) => n !== discovered - fromCode);
       for (const n of claimed) expect(n).toBeLessThanOrEqual(tested);

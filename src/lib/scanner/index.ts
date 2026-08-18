@@ -53,7 +53,7 @@ export async function runScan(target: URL): Promise<ScanReport> {
         checks.push(
           notChecked(check.id, check.title, {
             headline: "This check did not run.",
-            why: `Snaglist stops itself before it puts a load on your app, and ${BUDGET_REASON[stop]}.`,
+            why: `Quietword stops itself before it puts a load on your app, and ${BUDGET_REASON[stop]}.`,
             nextStep: "Run the scan again in a few minutes.",
             method: "Not run.",
           }),
@@ -97,7 +97,7 @@ async function runSafely(check: Check, ctx: ScanContext): Promise<CheckResult> {
     const detail = error instanceof Error ? error.message : "an unexpected error";
     return notChecked(check.id, check.title, {
       headline: "This check stopped part way through, so there is no result for it.",
-      why: "Snaglist would rather tell you it does not know than guess.",
+      why: "Quietword would rather tell you it does not know than guess.",
       nextStep: "Run the scan again. If it keeps happening, this one needs a human.",
       method: `Stopped with: ${detail}`,
     });
@@ -107,7 +107,7 @@ async function runSafely(check: Check, ctx: ScanContext): Promise<CheckResult> {
 function explainSilence(ctx: ScanContext): string {
   const blocked = ctx.failures.find((f) => f.kind === "blocked");
   if (blocked) {
-    return "That address points at a private or internal network, and Snaglist only scans apps on the public internet.";
+    return "That address points at a private or internal network, and Quietword only scans apps on the public internet.";
   }
   const timeout = ctx.failures.find((f) => f.kind === "timeout");
   if (timeout) {
@@ -115,7 +115,7 @@ function explainSilence(ctx: ScanContext): string {
   }
   const network = ctx.failures.find((f) => f.kind === "network");
   if (network) {
-    return `Snaglist could not reach that address: ${network.message}.`;
+    return `Quietword could not reach that address: ${network.message}.`;
   }
-  return "Snaglist could not reach that address. Check it is spelled right and the app is live.";
+  return "Quietword could not reach that address. Check it is spelled right and the app is live.";
 }

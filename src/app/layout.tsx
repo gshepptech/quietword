@@ -26,9 +26,9 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Snaglist: five security checks for the app you shipped",
+  title: "Quietword: five security checks for the app you shipped",
   description:
-    "Paste your app's address and Snaglist checks it for the five gaps that most often turn up in apps built with AI coding tools. Free, no account.",
+    "Paste your app's address and Quietword checks it for the five gaps that most often turn up in apps built with AI coding tools. Free, no account.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

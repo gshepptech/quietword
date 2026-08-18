@@ -1,44 +1,52 @@
-# Snaglist: foundation
+# Quietword: foundation
 
 Written before implementation. If the build diverges from this document, this document gets updated
 in the same commit as the change, with the reason.
 
 ## 1. The name
 
-Working directory is `launch-check`. That was a placeholder. The product is **Snaglist**.
+Working directory is `launch-check`. That was a placeholder. The product is **Quietword**.
 
-Three candidates were on the table.
+The name has been changed twice, so this section records the reasoning rather than the winner, and
+the two rules that came out of getting it wrong.
 
-**Loophole.** Memorable and it has a point of view, but it names the problem rather than the outcome,
-and "loophole" carries a rule-dodging connotation from legal and insurance language. The product's
-whole job is to sound calm. A name that sounds like an accusation works against that.
+**Greenlit**, until 25 July 2026. Veracode holds a trademark on Greenlight for security scanning
+software, and greenlit.io and getgreenlit.xyz are both live products. It also meant permission to
+launch, which is precisely the thing a five-check scan must never imply, so the name and the
+disclaimer pulled against each other and the copy had to hold a line the name kept crossing.
 
-**ShipGuard.** Descriptive and clear, but the `-Guard` suffix is heavily occupied (CloudGuard,
-SiteGuard, AppGuard, and a long tail below them). It reads as an enterprise security vendor, which is
-exactly the register this audience finds intimidating. A founder who has never had a security
-conversation does not want to buy from a vendor with a shield in its logo.
+**Snaglist**, from 25 July to 18 August 2026. A snagging list is the defect list an inspector writes
+before a building is handed over, which described the output well. Two things killed it. There is a
+live iOS construction app of exactly that name shipping at snaglist.dev, which is the same failure
+as Greenlit. And it is British building-trade jargon, so the founder in San Francisco this is built
+for reads it as a strange word rather than as a familiar one.
 
-**Snaglist.** A snagging list is what an inspector writes before a new building is handed over:
-the list of defects to put right, not a certificate that the building is sound. That is exactly
-what this product produces, and the name says so before any copy has to. It sits in
-launch-readiness language rather than security-vendor language, it is one word, and it carries no
-fear.
+**Loophole** and **ShipGuard** were considered at the start and rejected. Loophole names the problem
+rather than the outcome and carries a rule-dodging connotation from legal and insurance language,
+which works against a product whose whole job is to sound calm. ShipGuard is clear, but the `-Guard`
+suffix is heavily occupied and reads as an enterprise security vendor, which is the register this
+audience finds intimidating. Bare **Snag** was rejected because SNAG LLC holds a registered software
+mark and Snagit is well known, so a single common noun is both hard to defend and easy to collide
+with.
 
-Chosen: **Snaglist**.
+**Quietword**, from 18 August 2026. To have a quiet word with someone is to tell them privately and
+early, before it becomes everyone's problem, and that is the whole product in an idiom the audience
+already speaks. It sits in ordinary English rather than in security-vendor language or building-site
+language. It carries no fear and it promises no clearance: a quiet word is information, not a
+verdict. No software trademark and no software product of the name were found on 18 August 2026;
+the nearest neighbours are a Yorkshire performing arts company and an unrelated communications
+firm. quietword.io and getquietword.com are free.
 
-The name was Greenlit until 25 July 2026. Dropped because Veracode holds a trademark on Greenlight
-for security scanning software, and greenlit.io and getgreenlit.xyz are both live products.
+Two rules came out of this, recorded so the next session does not pay for them again.
 
-Greenlit had a problem that Snaglist does not, and it is worth recording because it shaped the
-copy rules. Greenlit meant permission to launch, which is precisely the thing a five-check scan
-must never imply, so the name and the disclaimer pulled against each other and copy had to hold
-the line. Snaglist points the other way: a list of snags is a list of things found, and a short
-list is not a clean bill of health. The report still never says "your app is secure", and it still
-says plainly that five checks is not an audit. This is carried into
-CLAUDE.md as a hard copy rule so a future session does not undo it. See also "Risks and open
-questions".
+A name is not cleared by an empty trademark register. Both names that died were killed by a live
+product, not by a mark. Search the App Store and the open web before the register.
 
-No candidate contains "Vibe" or "Preflight", both of which are taken by direct competitors.
+A name cannot contain a word the product's own copy leans on. Handcheck led the shortlist until
+"how Handcheck checked this" appeared in the report. The report says check constantly, so check,
+scan, list, pass and clear are all unusable in the name.
+
+Both are carried into CLAUDE.md so they survive this document. See also "Risks and open questions".
 
 ## 2. What this is
 
@@ -259,7 +267,7 @@ They do not report `pass`.
 cap of 3 scans running at once. In-memory, which is honest about what it is: it resets on restart and
 does not hold across multiple instances. Documented as a known limitation rather than dressed up.
 
-**Identification.** Every request carries a truthful user agent, `SnaglistScanner/0.1`, with a
+**Identification.** Every request carries a truthful user agent, `QuietwordScanner/0.1`, with a
 contact URL when `SCANNER_CONTACT_URL` is set. Someone reading their access logs should be able to
 tell what hit them and why. The scanner does not spoof a browser.
 
@@ -389,12 +397,32 @@ Two rules specific to this product:
 - The report reads as plain language and contains no jargon a non-technical founder would stumble on.
 - No em dashes and no banned words in any user-facing string.
 
-## 13. Risks and open questions
+## 13. Regenerating the README hero
 
-**The name has not had a trademark or domain check.** Snaglist is coherent with what the product
-does, unlike the name it replaced, but nobody has checked whether it is available or defensible.
-Do that before spending money on it. Bare "Snag" was already rejected for this reason: SNAG LLC
-holds a registered software mark and Snagit is well known.
+`assets/hero.png` is the real `Report` component rendered and screenshotted, not a drawing of one.
+It gets stale every time the report copy or the brand changes, and a stale hero shows the wrong
+product to everyone who opens the repo.
+
+To redo it: add `src/app/capture/page.tsx` that renders `<Report>` with a hand-written `ScanReport`
+covering one `attention`, one `pass` and one `not_checked`, wrapped in the same masthead and
+`mx-auto max-w-3xl px-6 py-14` container as `page.tsx`. Build, serve, then
+
+    npx playwright@1.62.1 screenshot --viewport-size=880,1660 --wait-for-timeout=1500 \
+      http://127.0.0.1:3000/capture assets/hero.png
+
+The fixed viewport rather than `--full-page` is what anchors the crop to the top and ends it after
+the third card. Delete the route afterwards: it must not ship, because a public page showing an
+invented report of an invented app is a page that can be mistaken for a real result. The scanned
+app in the fixture is invented for the same reason, so the image never carries a real customer's
+open API route.
+
+## 14. Risks and open questions
+
+**The name has had a desk check, not legal clearance.** Quietword was searched on 18 August 2026
+across the trademark registers, the App Store and the open web, and nothing in this field came back.
+That is the same depth of search that cleared Snaglist three weeks earlier and Greenlit before it,
+and both of those turned out to be occupied. A solicitor should confirm the name before any money
+goes on it, and quietword.io should be registered before the name is used in public.
 
 **The rate limit check will produce false findings.** A 10-request burst cannot distinguish "no limiter"
 from "limiter set at 20". Reported at medium confidence with the method stated in the report, but some

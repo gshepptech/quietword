@@ -86,7 +86,7 @@ function CheckCard({ check, index }: { check: CheckResult; index: number }) {
 
         <details className="mt-5 border-t border-line pt-4">
           <summary className="cursor-pointer font-mono text-[0.6875rem] tracking-[0.12em] text-muted uppercase hover:text-ink">
-            How Snaglist checked this
+            How Quietword checked this
           </summary>
           <p className="mt-3 text-sm text-muted">{check.method}</p>
           {check.verdict !== "not_checked" && (
@@ -115,7 +115,7 @@ function summaryLine(report: ScanReport): string {
     return `All ${count(total)} checks came back clean.`;
   }
   if (attention === 0) {
-    return `Nothing came back on the ${count(ran)} ${ran === 1 ? "check" : "checks"} Snaglist could run. ${count(notChecked).replace(/^\w/, (c) => c.toUpperCase())} could not be run at all.`;
+    return `Nothing came back on the ${count(ran)} ${ran === 1 ? "check" : "checks"} Quietword could run. ${count(notChecked).replace(/^\w/, (c) => c.toUpperCase())} could not be run at all.`;
   }
 
   const opener =
@@ -137,7 +137,7 @@ export function Report({ report }: { report: ScanReport }) {
           {report.target} · {report.budget.requestsUsed} requests · {seconds}s
         </p>
         <p className="mt-4 max-w-2xl text-[0.9375rem] text-muted">
-          Five checks is not a security audit. Snaglist tested what your app shows the outside world.
+          Five checks is not a security audit. Quietword tested what your app shows the outside world.
           It did not see your database rules, your dependencies, or anything behind your login.
         </p>
         {report.budget.ranOut && (

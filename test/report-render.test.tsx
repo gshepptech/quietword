@@ -13,7 +13,7 @@ function check(overrides: Partial<CheckResult>): CheckResult {
     headline: "Nothing turned up.",
     why: "Because it matters.",
     nextStep: "Do this next.",
-    method: "Snaglist read the page.",
+    method: "Quietword read the page.",
     evidence: [],
     ...overrides,
   };
@@ -61,8 +61,15 @@ describe("Report", () => {
       <Report report={report([check({ id: "secrets" }), check({ id: "auth" })])} />,
     );
     expect(html).toContain("came back clean");
-    // The brand is Snaglist. "Snaglist" is never a verdict the product issues.
-    expect(html).not.toMatch(/is secure|you'?re snaglist|you are snaglist|fully secure|all clear/i);
+    // This guards the rule that the product never tells anyone their app is
+    // secure. It used to name the brand, because the phrase being banned was
+    // "you're greenlit" back when that was the name, and two renames dragged
+    // the brand along with it until the assertion was testing for a sentence
+    // no version of this product could ever emit. The phrases below are the
+    // ones a clean scan is actually tempted to reach for.
+    expect(html).not.toMatch(
+      /is secure|fully secure|all clear|no snags|you'?re safe|you are safe|nothing to worry|good to go|passed the audit/i,
+    );
   });
 
   it("counts what needs fixing without shouting about it", () => {

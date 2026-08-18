@@ -78,7 +78,7 @@ export function shouldInspect(status: number, contentType: string): boolean {
 const TITLE = "What your app says when something goes wrong";
 
 const METHOD =
-  "Snaglist asked for addresses that do not exist and sent one deliberately broken request, then read every error your app sent back during the scan. It looked for the sort of output that is written for a developer reading a terminal: file paths from your server, database errors, and stack traces.";
+  "Quietword asked for addresses that do not exist and sent one deliberately broken request, then read every error your app sent back during the scan. It looked for the sort of output that is written for a developer reading a terminal: file paths from your server, database errors, and stack traces.";
 
 function randomPath(): string {
   return Math.random().toString(36).slice(2, 12);
@@ -103,7 +103,7 @@ export const errorsCheck: Check = {
       await ctx.visit(ctx.origin + target, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: '{"snaglist":',
+        body: '{"quietword":',
       });
     }
 
@@ -113,7 +113,7 @@ export const errorsCheck: Check = {
 
     if (inspected.length === 0) {
       return notChecked("errors", TITLE, {
-        headline: "Snaglist did not get an error out of your app, so there was nothing to read.",
+        headline: "Quietword did not get an error out of your app, so there was nothing to read.",
         why: "This check needs to see how your app behaves when something goes wrong, and nothing went wrong during the scan.",
         nextStep:
           "Not a problem in itself. If you want to know for certain, ask whoever reviews your app to try it with a broken request while watching what comes back.",
@@ -151,7 +151,7 @@ export const errorsCheck: Check = {
       headline: "Your app's error messages kept the details to themselves.",
       why: "Error pages that name your files and libraries give away how your app is built, and yours did not.",
       nextStep:
-        "Medium confidence, because Snaglist only broke your app in a few ways. A different mistake somewhere else could still produce a detailed error.",
+        "Medium confidence, because Quietword only broke your app in a few ways. A different mistake somewhere else could still produce a detailed error.",
       method: `${METHOD} It read ${inspected.length} ${inspected.length === 1 ? "answer" : "answers"} from your app.`,
     });
   },

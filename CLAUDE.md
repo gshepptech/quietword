@@ -1,15 +1,15 @@
-# Snaglist: project memory
+# Quietword: project memory
 
 Read this before doing anything. It is the brief, not a README. Full reasoning lives in
 `docs/foundation.md`.
 
 ## 1. Context
 
-Snaglist is a security and launch-readiness scanner for people who built a real app with AI coding
+Quietword is a security and launch-readiness scanner for people who built a real app with AI coding
 tools (Claude Code, Cursor, Replit, Lovable, Bolt) and have little or no security background. They
 paste a live URL and get a plain-language report on the five most common gaps. It is aimed at one
 person: a solo or near-solo founder who is technical enough to deploy and not technical enough to read
-a bundle and spot an API key. Snaglist is explicitly not a security audit, not a pentest, not a
+a bundle and spot an API key. Quietword is explicitly not a security audit, not a pentest, not a
 compliance product, and it never claims an app is secure.
 
 **The paid human review is the product. The free scan is how people find it.** Automated scanning of
@@ -36,31 +36,39 @@ and price accordingly: the scan stays free forever, the review is what pays.
   reports `not_checked` with a reason. A false pass is the worst thing this product can do.
 - **The product never tells a user their app is secure.** Not in the report, not in the CTA, not
   anywhere. It reports which of five checks came back clean, and it says five checks is not an audit.
-  The brand is Snaglist, taken from a snagging list, the defect list an inspector writes before a
-  new building is handed over. A clean scan is never reported as "no snags" or "all clear"; it is
-  reported as which checks came back clean and what was not looked at. Enforced by
-  `test/copy.test.ts`.
+  The brand is Quietword, from having a quiet word with someone: telling them privately, early,
+  and without fuss, before the thing becomes everyone's problem. A clean scan is never reported as
+  "no snags" or "all clear"; it is reported as which checks came back clean and what was not looked
+  at. Enforced by `test/copy.test.ts`.
 
-  Naming history: the product was called Greenlit until 25 July 2026. Dropped because Veracode holds
-  a trademark on Greenlight for security scanning software, and greenlit.io and getgreenlit.xyz are
-  both live products. Bare "Snag" was considered and rejected: SNAG LLC holds a registered software
-  mark and Snagit is well known, so a single common noun is both hard to defend and easy to collide
-  with.
+  Naming history, in order. **Greenlit** until 25 July 2026, dropped because Veracode holds a
+  trademark on Greenlight for security scanning software and greenlit.io and getgreenlit.xyz are
+  both live products. It had a second problem worth remembering: greenlit means permission to
+  launch, which is the one thing five checks can never grant, so the name argued against every
+  string in the report.
 
-  Snaglist was searched on 18 August 2026. This was a desk check, not legal clearance, and a
-  solicitor should confirm it before any money goes on the name. What it found: no registered
-  trademark for "Snaglist" or "Snag List" in software classes on the USPTO or Justia registers, and
-  none surfaced on the UK register either, which is the one that matters most because "snag list" is
-  a British and Irish building term. The risk is not a mark, it is a live product. Snaglist on the
-  iOS App Store is a construction snagging app by Daniel McCann, shipping since at least March 2026
-  at snaglist.dev, with paid tiers. Same spelling, same word, different field. The domains are close
-  to gone: snaglist.io is the only obvious one still free, snaglist.dev, .app, .co and .xyz are all
-  taken, getsnaglist.com was registered in November 2025 through an Irish registrar and does not
-  serve a page, and snaglist.com is parked at HugeDomains asking 5,495 dollars.
+  Bare **Snag** was considered and rejected the same day. SNAG LLC holds a registered software mark
+  and Snagit is well known, so a single common noun is both hard to defend and easy to collide with.
 
-  So the open question is not whether the name is legally clear. It is whether launching a security
-  product called Snaglist against a live construction app called Snaglist is a collision worth
-  accepting. Decide that before buying a domain.
+  **Snaglist** from 25 July to 18 August 2026. The desk check on 18 August found no trademark for it
+  in software classes, but it found something worse: a live iOS construction snagging app of exactly
+  the same name at snaglist.dev, shipping with paid tiers. Snaglist was also trade jargon that the
+  people this is built for do not speak.
+
+  **Quietword** from 18 August 2026. Searched the same day, to the same depth, which is a desk check
+  and not legal clearance: no software trademark found, and no software product of the name. The
+  nearest neighbours are a Yorkshire performing arts company called A Quiet Word and an unrelated
+  firm called Quiet Software, neither in this field. quietword.io and getquietword.com are free;
+  quietword.com, .app, .dev and .co are registered.
+
+  Two rules fell out of doing this four times, and they are cheaper to obey than to rediscover.
+  A name is not cleared by an empty trademark register, because what actually blocks a name is a
+  live product; check the App Store and the web before the register. And the name cannot contain a
+  word the product's own copy leans on. Handcheck was the frontrunner until "how Handcheck checked
+  this" turned up in the report. For the same reason, avoid check, scan, list, pass and clear.
+
+  Get a solicitor to confirm Quietword before any money goes on it.
+
 - **Scanning guardrails are structural, not advisory.** Address denylist enforced at connect-time DNS
   lookup, manual redirect following with revalidation, request and time and byte budgets, truthful
   user agent, consent required. Do not weaken any of these for convenience. Details in
