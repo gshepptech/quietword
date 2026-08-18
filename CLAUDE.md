@@ -45,8 +45,22 @@ and price accordingly: the scan stays free forever, the review is what pays.
   a trademark on Greenlight for security scanning software, and greenlit.io and getgreenlit.xyz are
   both live products. Bare "Snag" was considered and rejected: SNAG LLC holds a registered software
   mark and Snagit is well known, so a single common noun is both hard to defend and easy to collide
-  with. Snaglist has not yet had a formal trademark or domain check. Do that before spending money on
-  the name.
+  with.
+
+  Snaglist was searched on 18 August 2026. This was a desk check, not legal clearance, and a
+  solicitor should confirm it before any money goes on the name. What it found: no registered
+  trademark for "Snaglist" or "Snag List" in software classes on the USPTO or Justia registers, and
+  none surfaced on the UK register either, which is the one that matters most because "snag list" is
+  a British and Irish building term. The risk is not a mark, it is a live product. Snaglist on the
+  iOS App Store is a construction snagging app by Daniel McCann, shipping since at least March 2026
+  at snaglist.dev, with paid tiers. Same spelling, same word, different field. The domains are close
+  to gone: snaglist.io is the only obvious one still free, snaglist.dev, .app, .co and .xyz are all
+  taken, getsnaglist.com was registered in November 2025 through an Irish registrar and does not
+  serve a page, and snaglist.com is parked at HugeDomains asking 5,495 dollars.
+
+  So the open question is not whether the name is legally clear. It is whether launching a security
+  product called Snaglist against a live construction app called Snaglist is a collision worth
+  accepting. Decide that before buying a domain.
 - **Scanning guardrails are structural, not advisory.** Address denylist enforced at connect-time DNS
   lookup, manual redirect following with revalidation, request and time and byte budgets, truthful
   user agent, consent required. Do not weaken any of these for convenience. Details in
