@@ -97,9 +97,12 @@ the tests exercise, because a false pass would come from there.
   will not turn up.
 - **Rate limiting is in memory.** It resets on restart and does not hold across more than one
   instance. Fine for one box, wrong for two.
-- **`npm audit` reports three advisories.** All of them are in packages Next.js pulls in itself
-  (`postcss` and `sharp`), and every published Next version through 16.3 is affected, so there is no
-  version to move to. Nothing in this repo depends on either package directly.
+- **`npm audit` reports four advisories, all high.** They are in `postcss`, `nanoid`, and `sharp`,
+  none of which this repo asks for by name. The copy of `postcss` that Tailwind and Vitest pull in
+  is already past the affected range; the copy Next.js pins is not, and `sharp` arrives only through
+  Next. A clean tree means moving to `next@16.3.1`, which is a major version up from the 15.5 line
+  this is built on, so it is an upgrade to plan rather than a patch to apply. All four sit in build
+  tooling and in the image optimiser, and this app serves no images through `next/image`.
 
 ## Licence
 
