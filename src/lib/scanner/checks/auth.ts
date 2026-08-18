@@ -162,6 +162,32 @@ function candidatePaths(ctx: ScanContext): { paths: string[]; discovered: number
   return { paths: merged.slice(0, MAX_PROBES), discovered: discovered.length };
 }
 
+/**
+ * Says where the routes it tested came from. The counts pull apart easily:
+ * discovery can turn up more routes than `MAX_PROBES` leaves room for, and the
+ * budget can stop the loop earlier still, so the number found in the code is
+ * often larger than the number actually asked. Reporting the discovery total as
+ * though it were the tested total reads as arithmetic that does not add up, and
+ * claiming common names were tried when there was no room for any is a claim
+ * about work that never happened.
+ */
+export function describeCoverage(tested: number, fromCode: number, discovered: number): string {
+  const addresses = `${tested} ${tested === 1 ? "address" : "addresses"}`;
+  const untested = discovered - fromCode;
+  const overflow =
+    untested > 0
+      ? ` It found ${untested} more in the code than it had room to test in one scan.`
+      : "";
+
+  if (fromCode === 0) {
+    return ` It tested ${addresses}, all of them common names rather than anything found in your app's own code.${overflow}`;
+  }
+  if (fromCode === tested) {
+    return ` It tested ${addresses}, all of them found by reading your app's own code.${overflow}`;
+  }
+  return ` It tested ${addresses}. ${fromCode} of them ${fromCode === 1 ? "was" : "were"} found by reading your app's own code, and the rest are common names.${overflow}`;
+}
+
 export const authCheck: Check = {
   id: "auth",
   title: TITLE,
@@ -224,7 +250,8 @@ export const authCheck: Check = {
     const publicRoutes = outcomes.filter((o) => o.state === "open_public");
     const existing = open.length + protectedRoutes.length + publicRoutes.length;
 
-    const method = `${METHOD_BASE} It tested ${tested} ${tested === 1 ? "address" : "addresses"}, ${discovered} of which ${discovered === 1 ? "was" : "were"} found by reading your app's own code and the rest are common names.`;
+    const fromCode = outcomes.filter((o) => ctx.collected.apiPaths.includes(o.path)).length;
+    const method = `${METHOD_BASE}${describeCoverage(tested, fromCode, discovered)}`;
 
     if (tested === 0) {
       return notChecked("auth", TITLE, {
@@ -254,7 +281,10 @@ export const authCheck: Check = {
       return result("auth", TITLE, {
         verdict: "attention",
         confidence: "high",
-        headline: `${open.length === 1 ? "One address" : `${open.length} addresses`} in your app returns people's information to anyone who asks for it.`,
+        headline:
+          open.length === 1
+            ? "One address in your app returns people's information to anyone who asks for it."
+            : `${open.length} addresses in your app return people's information to anyone who asks for them.`,
         why: "Anyone who knows the address can read this in a browser. They do not need an account, and nothing in your app records that they took it.",
         nextStep:
           "Add a login check at the top of each of these routes so they only answer when the request carries a valid session, and only return the rows that belong to that person. If you are using Supabase or Firebase, this usually means turning on row-level security as well as checking the session.",
