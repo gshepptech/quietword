@@ -1,7 +1,7 @@
 import type { Agent } from "undici";
 import { describe, expect, it } from "vitest";
 
-import { authCheck } from "@/lib/scanner/checks/auth";
+import { authCheck, COMMON_API_PATHS } from "@/lib/scanner/checks/auth";
 import { errorsCheck } from "@/lib/scanner/checks/errors";
 import { rateLimitCheck } from "@/lib/scanner/checks/rate-limit";
 import { secretsCheck } from "@/lib/scanner/checks/secrets";
@@ -122,6 +122,45 @@ describe("authCheck", () => {
     );
     const check = await authCheck.run(ctx);
     expect(check.verdict).toBe("not_checked");
+  });
+
+  /**
+   * Found against a real app sitting behind Cloudflare Access. Every path
+   * answered 401, so every guessed name in the common list looked protected and
+   * the check reported a clean result over eight routes that were never there.
+   */
+  it.each([401, 403])(
+    "says not checked when the whole app answers %i, including invented addresses",
+    async (status) => {
+      const check = await authCheck.run(fakeContext({}, { status }));
+
+      expect(check.verdict).toBe("not_checked");
+      expect(check.headline).toContain("asks for a login before it answers anything");
+      expect(check.evidence).toHaveLength(1);
+      const [only] = check.evidence;
+      expect(only?.label).toMatch(/^\/api\/[a-z0-9]+$/);
+      expect(only?.detail).toContain(String(status));
+    },
+  );
+
+  it("does not name a route the app never had when everything is gated", async () => {
+    const check = await authCheck.run(fakeContext({}, { status: 401 }));
+    const named = JSON.stringify(check);
+
+    for (const guess of COMMON_API_PATHS) {
+      expect(named).not.toContain(`"${guess}"`);
+    }
+  });
+
+  it("still reports a genuinely protected route when invented addresses 404", async () => {
+    const ctx = fakeContext(
+      { "/api/users": { status: 401 }, "/api/me": { status: 401 } },
+      { status: 404 },
+    );
+    const check = await authCheck.run(ctx);
+
+    expect(check.verdict).toBe("pass");
+    expect(check.evidence.map((e) => e.label)).toEqual(["/api/users", "/api/me"]);
   });
 });
 

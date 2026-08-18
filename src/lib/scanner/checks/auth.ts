@@ -24,6 +24,32 @@ export const COMMON_API_PATHS = [
 /** Routes tested per scan, discovered ones first. */
 const MAX_PROBES = 8;
 
+function randomPath(): string {
+  return Math.random().toString(36).slice(2, 12);
+}
+
+/**
+ * An address invented on the spot, asked for before anything else, so the check
+ * knows what "this route does not exist" looks like on this particular app.
+ */
+export function controlPath(): string {
+  return `/api/${randomPath()}`;
+}
+
+/**
+ * True when the app demanded a login for an address that cannot exist.
+ *
+ * Sites behind a single gate, a Cloudflare Access rule or a password on a
+ * preview deployment, answer 401 for every path there is. Without this, every
+ * guessed name in `COMMON_API_PATHS` comes back "protected", the check counts
+ * routes that were never there, and it reports a clean result built on them.
+ * That is the false pass this codebase exists to avoid.
+ */
+export function isGated(control: { ok: boolean; status?: number }): boolean {
+  if (!control.ok) return false;
+  return control.status === 401 || control.status === 403;
+}
+
 /**
  * Field names that say "this is somebody's personal information" loudly enough
  * to act on. A `200` on its own is not a finding: plenty of API routes are
@@ -194,6 +220,28 @@ export const authCheck: Check = {
   async run(ctx: ScanContext): Promise<CheckResult> {
     const { paths, discovered } = candidatePaths(ctx);
     const outcomes: RouteOutcome[] = [];
+
+    const control = controlPath();
+    const controlResponse = ctx.budget.exhausted()
+      ? { ok: false as const }
+      : await ctx.visit(ctx.origin + control);
+
+    if (isGated(controlResponse)) {
+      const status = controlResponse.ok ? controlResponse.status : 0;
+      return notChecked("auth", TITLE, {
+        headline: "Your app asks for a login before it answers anything, so single routes could not be tested.",
+        why: "Every address Quietword tried came back asking for a login, including one it made up on the spot that cannot exist on your app. An answer that is the same for real addresses and invented ones says nothing about either.",
+        nextStep:
+          "Nothing to do here if the login gate is meant to be there. If you expected visitors to reach your app without signing in, the gate is the thing to look at, and this check is worth running again once it is off.",
+        method: `${METHOD_BASE} It began by asking for an address it made up on the spot, to learn what your app says about an address that does not exist.`,
+        evidence: [
+          {
+            label: control,
+            detail: `Made up for this scan and answered with ${status}, the same as the addresses that might have been real.`,
+          },
+        ],
+      });
+    }
 
     for (const path of paths) {
       if (ctx.budget.exhausted()) break;

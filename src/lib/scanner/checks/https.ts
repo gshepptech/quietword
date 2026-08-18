@@ -28,6 +28,26 @@ export interface HttpsAssessment {
   hstsMaxAge: number | null;
 }
 
+/**
+ * What the insecure address actually did, in one sentence.
+ *
+ * "Served the page" is only true of a 2xx. An app behind a login gate answers
+ * the insecure address with a 401, which is still a finding, because the
+ * request reached the server over an open connection rather than being turned
+ * back at the door. Describing that as serving the page is a detail a reader
+ * can check and find wrong, on the one line of the report that exists to be
+ * checked.
+ */
+export function describeInsecureAnswer(status: number, location: string | null): string {
+  if (location) {
+    return `Answered with ${status} and pointed at ${location} instead of sending the visitor to the secure address.`;
+  }
+  if (status < 300) {
+    return `Answered with ${status} and served the page instead of sending the visitor to the secure address.`;
+  }
+  return `Answered with ${status} on the insecure address instead of sending the visitor to the secure one.`;
+}
+
 export function parseHstsMaxAge(header: string | null): number | null {
   if (!header) return null;
   const match = /max-age\s*=\s*"?(\d+)"?/i.exec(header);
@@ -143,7 +163,7 @@ export const httpsCheck: Check = {
           evidence: [
             {
               label: httpUrl,
-              detail: `Answered with ${evidence.httpStatus}${evidence.httpLocation ? ` and pointed at ${evidence.httpLocation}` : " and served the page"} instead of sending the visitor to the secure address.`,
+              detail: describeInsecureAnswer(evidence.httpStatus ?? 0, evidence.httpLocation),
             },
             ...hstsNote,
           ],

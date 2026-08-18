@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { evaluateHttps, type HttpsEvidence, parseHstsMaxAge } from "@/lib/scanner/checks/https";
+import {
+  describeInsecureAnswer,
+  evaluateHttps,
+  type HttpsEvidence,
+  parseHstsMaxAge,
+} from "@/lib/scanner/checks/https";
 
 const base: HttpsEvidence = {
   httpsReachable: true,
@@ -84,5 +89,27 @@ describe("parseHstsMaxAge", () => {
   it("returns null when the header is missing or malformed", () => {
     expect(parseHstsMaxAge(null)).toBeNull();
     expect(parseHstsMaxAge("includeSubDomains")).toBeNull();
+  });
+});
+
+/**
+ * Found against a real app behind a login gate: the insecure address answered
+ * 401 and the report described that as serving the page.
+ */
+describe("describeInsecureAnswer", () => {
+  it("says the page was served only when the app actually served it", () => {
+    expect(describeInsecureAnswer(200, null)).toContain("served the page");
+  });
+
+  it("does not claim a page was served when the answer was a 401", () => {
+    const line = describeInsecureAnswer(401, null);
+    expect(line).not.toContain("served the page");
+    expect(line).toContain("401 on the insecure address");
+  });
+
+  it("names the address an insecure redirect pointed at", () => {
+    expect(describeInsecureAnswer(302, "http://elsewhere.example/")).toContain(
+      "pointed at http://elsewhere.example/",
+    );
   });
 });
