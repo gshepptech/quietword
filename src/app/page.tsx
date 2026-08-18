@@ -41,47 +41,56 @@ const CHECKS = [
 export default function Home() {
   return (
     <div className="min-h-dvh">
-      <header className="border-b border-line">
-        <div className="mx-auto flex max-w-3xl items-baseline gap-3 px-6 py-5">
-          <span className="font-display text-lg font-semibold tracking-tight">Quietword</span>
-          <span className="font-mono text-xs text-muted">free scan, or a person reads your app</span>
+      <header className="border-b border-line bg-surface">
+        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 px-6 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <span aria-hidden className="size-3 bg-ink" />
+            <span className="font-display text-[0.9375rem] font-bold tracking-tight uppercase">
+              Quietword
+            </span>
+          </div>
+          <span className="meta">Free scan · or a person reads your app</span>
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-6 py-14 sm:py-20">
-        <h1 className="max-w-[18ch] text-4xl sm:text-5xl">
+      <main className="mx-auto max-w-4xl px-6 py-12 sm:py-16">
+        <span className="meta">Five checks · no account · no install</span>
+        <h1 className="mt-3 max-w-[16ch] text-4xl sm:text-5xl">
           Find out what your app shows a stranger.
         </h1>
-        <p className="mt-6 max-w-2xl text-lg text-muted">
+        <p className="mt-5 max-w-[68ch] text-base text-muted">
           Paste the address of an app you built. Quietword checks it for the five gaps that turn up
           most often in apps written with AI coding tools, then tells you what it found in plain
-          language. Nothing to install, no account, no email.
+          language.
         </p>
 
-        <div className="mt-10">
+        <div className="mt-8">
           <Scanner />
         </div>
 
-        <section className="mt-20">
-          <h2 className="text-2xl">What Quietword looks at</h2>
-          <ol className="mt-6 border-t border-line">
+        <section className="mt-16">
+          <h2 className="text-lg tracking-tight uppercase">What Quietword looks at</h2>
+          <ol className="mt-4 border border-line bg-surface">
             {CHECKS.map((check, index) => (
-              <li key={check.title} className="flex gap-5 border-b border-line py-5">
-                <span aria-hidden className="mt-1 font-mono text-xs text-muted">
+              <li
+                key={check.title}
+                className="flex gap-4 border-b border-line px-5 py-4 last:border-b-0"
+              >
+                <span aria-hidden className="meta tnum mt-0.5 !text-ink">
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <div>
-                  <h3 className="text-base font-medium">{check.title}</h3>
-                  <p className="mt-1 text-[0.9375rem] text-muted">{check.detail}</p>
+                  <h3 className="text-[0.9375rem] font-medium">{check.title}</h3>
+                  <p className="mt-1 text-[0.875rem] text-muted">{check.detail}</p>
                 </div>
               </li>
             ))}
           </ol>
         </section>
 
-        <section className="mt-16">
-          <h2 className="text-2xl">What it does not cover</h2>
-          <p className="mt-5 max-w-2xl text-muted">
+        <section className="mt-14">
+          <h2 className="text-lg tracking-tight uppercase">What it does not cover</h2>
+          <p className="mt-4 max-w-[72ch] text-[0.875rem] text-muted">
             Quietword looks at your app from outside, the same way a stranger would. It cannot see
             your database access rules, your dependencies, the code behind your login, or anything in
             your repository. Five checks catch the problems that come up most. They do not catch
@@ -89,21 +98,22 @@ export default function Home() {
           </p>
         </section>
 
-        <section className="mt-16 border-t-2 border-ink pt-8">
-          <h2 className="text-2xl">Or have a person read it</h2>
-          <p className="mt-5 max-w-2xl text-muted">
+        <section className="mt-14 border-t-2 border-ink pt-7">
+          <span className="meta">The part a scanner cannot do</span>
+          <h2 className="mt-2 text-xl sm:text-2xl">Or have a person read it</h2>
+          <p className="mt-4 max-w-[72ch] text-[0.875rem] text-muted">
             The scan is a starting point. A review is me going through your app by hand: the parts
             the scan cannot reach, your database access rules, what your login actually protects,
             and which of the scan findings matter for your app rather than in general.
           </p>
-          <p className="mt-4 max-w-2xl text-muted">
+          <p className="mt-3 max-w-[72ch] text-[0.875rem] text-muted">
             You get a written list of what to fix, ordered by what I would do first, in the same
             plain language as the scan. No tooling to install and no code knowledge needed to read
             it. {REVIEW_PRICE}, usually back within three days.
           </p>
           <a
             href={REVIEW_CONTACT}
-            className="mt-6 inline-block border-b-2 border-forest pb-0.5 font-medium text-forest hover:border-forest-deep hover:text-forest-deep"
+            className="mt-5 inline-block bg-ink px-5 py-2.5 text-[0.875rem] font-medium text-surface hover:bg-signal-deep"
           >
             Send me the app to review
           </a>
@@ -111,14 +121,14 @@ export default function Home() {
       </main>
 
       <footer className="border-t border-line">
-        <div className="mx-auto max-w-3xl px-6 py-8 text-sm text-muted">
+        <div className="mx-auto max-w-4xl px-6 py-7 text-[0.8125rem] text-muted">
           <p>
             The scan is free and always will be. The review is how this pays for itself. Only scan
             an app you own or have permission to test.
           </p>
           <p className="mt-2">
             Quietword identifies itself as{" "}
-            <code className="font-mono text-ink">QuietwordScanner/0.1</code> in your access logs.
+            <code className="font-mono text-[0.8125rem] text-ink">QuietwordScanner/0.1</code> in your access logs.
           </p>
         </div>
       </footer>

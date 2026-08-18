@@ -1,26 +1,37 @@
 @import "tailwindcss";
 
 /*
-  Warm paper and ink, on purpose. A founder reading that their admin route is
-  open should feel like they are reading a letter, not watching a terminal fill
-  with red. Dark backgrounds and neon accents are the visual grammar of threat,
-  and this product is trying to lower the temperature.
+  Precision instrument, not a security console and not a letter.
+
+  The first version was warm paper and ink. The reasoning was sound (a founder
+  reading that their admin route is open should not feel shouted at) but it
+  produced a page nobody believed had scanned anything, and cream plus a serif
+  plus a sage green has since become its own template. So: a cool graphite
+  panel, white cards, hairlines, and numbers that are allowed to look like
+  numbers.
+
+  The calm is now carried by restraint rather than by warmth. There is one
+  signal colour and it is only ever spent on a finding. Nothing glows, nothing
+  is red-on-black, and no verdict is carried by colour alone.
 */
 @theme {
-  --color-paper: #faf6ef;
+  --color-ground: #e7e9eb;
   --color-surface: #ffffff;
-  --color-ink: #1a1917;
-  --color-muted: #6b6459;
-  --color-line: #e4dccb;
-  --color-forest: #1b4d3e;
-  --color-forest-deep: #123528;
-  --color-pass: #2f6b4f;
-  --color-clay: #a63a17;
-  --color-unknown: #77706a;
-  --color-amber: #b87514;
-  --color-wash: #f2ebdd;
+  --color-raised: #f3f5f6;
+  --color-ink: #131619;
+  --color-muted: #596069;
+  --color-line: #ced3d8;
+  --color-hairline: #99a1a9;
 
-  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  /* Verdicts. One each, and the word is always next to the colour. */
+  --color-signal: #b8371a;
+  --color-signal-deep: #8e2810;
+  --color-clean: #0e6b55;
+  --color-unknown: #6b727a;
+
+  --color-focus: #9a6400;
+
+  --font-display: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
   --font-sans: var(--font-plex-sans), system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", monospace;
 }
@@ -35,11 +46,11 @@
   }
 
   body {
-    background-color: var(--color-paper);
+    background-color: var(--color-ground);
     color: var(--color-ink);
     font-family: var(--font-sans);
-    font-size: 1rem;
-    line-height: 1.6;
+    font-size: 0.9375rem;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -47,25 +58,43 @@
   h2,
   h3 {
     font-family: var(--font-display);
-    font-weight: 600;
-    letter-spacing: -0.018em;
-    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.021em;
+    line-height: 1.08;
     text-wrap: balance;
   }
 
   /* One focus treatment everywhere, and it is always visible. */
   :focus-visible {
-    outline: 2px solid var(--color-amber);
+    outline: 2px solid var(--color-focus);
     outline-offset: 2px;
-    border-radius: 2px;
+    border-radius: 0;
   }
 
   ::selection {
-    background-color: #e9e0c9;
+    background-color: #cfd6db;
   }
 }
 
 @layer components {
+  /*
+    Small caps mono, used for every label and every piece of instrument
+    chrome. It is the one thing repeated often enough to read as a system.
+  */
+  .meta {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  /* Tabular figures, so counts and timings line up column to column. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
   /*
     Indeterminate progress. It is here because the scan takes long enough that a
     still page reads as broken, not as decoration.
@@ -74,9 +103,9 @@
     content: "";
     position: absolute;
     inset-block: 0;
-    inline-size: 35%;
-    background-color: var(--color-forest);
-    animation: scan-sweep 1.5s ease-in-out infinite;
+    inline-size: 28%;
+    background-color: var(--color-ink);
+    animation: scan-sweep 1.4s ease-in-out infinite;
   }
 }
 
@@ -85,7 +114,7 @@
     transform: translateX(-100%);
   }
   100% {
-    transform: translateX(285%);
+    transform: translateX(360%);
   }
 }
 
@@ -93,6 +122,6 @@
   .scan-progress::after {
     animation: none;
     inline-size: 100%;
-    opacity: 0.35;
+    opacity: 0.3;
   }
 }

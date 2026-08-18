@@ -58,11 +58,14 @@ export function Scanner() {
 
   return (
     <div>
-      <form onSubmit={onSubmit} className="border border-line bg-surface p-6 sm:p-8">
-        <label htmlFor={urlId} className="block font-medium">
-          Your app&rsquo;s address
-        </label>
-        <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+      <form onSubmit={onSubmit} className="border border-line bg-surface">
+        <div className="border-b border-line px-5 py-3">
+          <label htmlFor={urlId} className="meta">
+            Target address
+          </label>
+        </div>
+        <div className="px-5 py-5">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <input
             id={urlId}
             name="url"
@@ -75,12 +78,12 @@ export function Scanner() {
             onChange={(event) => setUrl(event.target.value)}
             aria-describedby={noteId}
             disabled={running}
-            className="w-full border border-line bg-paper px-4 py-3 font-mono text-base text-ink caret-forest placeholder:text-unknown focus-visible:border-forest focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber disabled:cursor-not-allowed disabled:border-line disabled:bg-line/40 disabled:text-unknown"
+            className="w-full border border-line bg-raised px-3.5 py-2.5 font-mono text-[0.9375rem] text-ink caret-signal placeholder:text-unknown focus-visible:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:text-unknown"
           />
           <button
             type="submit"
             disabled={running || !consent || url.trim().length === 0}
-            className="shrink-0 bg-forest px-6 py-3 font-medium text-paper transition-colors hover:bg-forest-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber active:bg-forest-deep disabled:cursor-not-allowed disabled:bg-unknown"
+            className="shrink-0 bg-ink px-6 py-2.5 text-[0.875rem] font-medium tracking-wide text-surface uppercase transition-colors hover:bg-signal-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:bg-unknown"
           >
             {running ? "Checking" : "Run the five checks"}
           </button>
@@ -93,21 +96,22 @@ export function Scanner() {
             checked={consent}
             onChange={(event) => setConsent(event.target.checked)}
             disabled={running}
-            className="mt-3 size-5 shrink-0 accent-[#1b4d3e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber disabled:cursor-not-allowed"
+            className="mt-2.5 size-4 shrink-0 accent-[#131619] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed"
           />
           <label
             htmlFor={consentId}
-            className="flex min-h-11 cursor-pointer items-center text-[0.9375rem] leading-relaxed text-muted"
+            className="flex min-h-11 cursor-pointer items-center text-[0.875rem] leading-relaxed text-muted"
           >
             I own this app, or I have permission from the person who does to test it.
           </label>
         </div>
 
-        <p id={noteId} className="mt-4 border-t border-line pt-4 text-sm text-muted">
+        <p id={noteId} className="mt-5 border-t border-line pt-4 text-[0.8125rem] text-muted">
           Quietword sends about thirty requests from its own server, over roughly twenty seconds. It
           never signs in, never sends anything designed to break your app, and refuses any address on
           a private network.
         </p>
+        </div>
       </form>
 
       <div
@@ -119,18 +123,16 @@ export function Scanner() {
       >
         {running && (
           <div className="mt-8">
-            <p className="font-mono text-sm text-muted">
-              Running the five checks. This takes up to twenty five seconds.
-            </p>
+            <p className="meta">Running five checks · up to 25s</p>
             <div
-              className="scan-progress relative mt-3 h-[3px] overflow-hidden bg-wash"
+              className="scan-progress relative mt-3 h-[2px] overflow-hidden bg-line"
               role="presentation"
             />
           </div>
         )}
 
         {state.status === "error" && (
-          <p className="mt-8 border-l-2 border-clay bg-surface p-4 text-[0.9375rem]">
+          <p className="mt-8 border border-line border-l-2 border-l-signal bg-surface p-4 text-[0.875rem]">
             {state.message}
           </p>
         )}
