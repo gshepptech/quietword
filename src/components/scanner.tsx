@@ -9,6 +9,7 @@ type State =
   | { status: "idle" }
   | { status: "running" }
   | { status: "done"; report: ScanReport }
+  // redpen-ignore:generic-error-message "error" here is the state discriminant and a payload key, not a string shown to anyone. Every message a user reads on this screen comes from the server and names what failed and what to do next; the only local fallback is "The scan did not come back. Try again in a minute."
   | { status: "error"; message: string };
 
 export function Scanner() {
@@ -74,12 +75,12 @@ export function Scanner() {
             onChange={(event) => setUrl(event.target.value)}
             aria-describedby={noteId}
             disabled={running}
-            className="w-full border border-line bg-paper px-4 py-3 font-mono text-[0.9375rem] text-ink placeholder:text-unknown focus-visible:border-forest disabled:opacity-60"
+            className="w-full border border-line bg-paper px-4 py-3 font-mono text-base text-ink caret-forest placeholder:text-unknown focus-visible:border-forest focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber disabled:cursor-not-allowed disabled:border-line disabled:bg-line/40 disabled:text-unknown"
           />
           <button
             type="submit"
             disabled={running || !consent || url.trim().length === 0}
-            className="shrink-0 bg-forest px-6 py-3 font-medium text-paper transition-colors hover:bg-forest-deep disabled:cursor-not-allowed disabled:bg-unknown"
+            className="shrink-0 bg-forest px-6 py-3 font-medium text-paper transition-colors hover:bg-forest-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber active:bg-forest-deep disabled:cursor-not-allowed disabled:bg-unknown"
           >
             {running ? "Checking" : "Run the five checks"}
           </button>
@@ -92,9 +93,12 @@ export function Scanner() {
             checked={consent}
             onChange={(event) => setConsent(event.target.checked)}
             disabled={running}
-            className="mt-1 size-4 shrink-0 accent-[#1b4d3e]"
+            className="mt-3 size-5 shrink-0 accent-[#1b4d3e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber disabled:cursor-not-allowed"
           />
-          <label htmlFor={consentId} className="text-[0.9375rem] text-muted">
+          <label
+            htmlFor={consentId}
+            className="flex min-h-11 cursor-pointer items-center text-[0.9375rem] leading-relaxed text-muted"
+          >
             I own this app, or I have permission from the person who does to test it.
           </label>
         </div>
