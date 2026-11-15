@@ -20,12 +20,3 @@ npm-debug.log*
 
 next-env.d.ts
 tsconfig.tsbuildinfo
-
-# Planning and tooling notes, kept locally rather than in the repo
-CLAUDE.md
-docs/
-.redpen/
-
-# Browser automation scratch output. It lands in the project root, and writes
-# here retrigger the dev server's file watcher mid-request.
-.playwright-mcp/
