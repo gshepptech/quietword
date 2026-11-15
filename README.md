@@ -9,17 +9,17 @@ A free security scan for apps built with AI coding tools: paste a URL, get a pla
 
 Quietword is for founders who shipped a real app with an AI coding tool and have never had anyone check it. They can deploy, but they cannot read a JavaScript bundle and spot an API key. The report is written for that person. It says what someone could do with each finding and what to do next, not which header was missing.
 
-> **Only scan sites you own or have permission to test.** The form requires a tick confirming that, and the API refuses a scan without it.
+> **Only scan sites you own or have permission to test.** The form requires a tick confirming that, and the API refuses a scan without it. Active checks, which send wrong logins, are a second opt-in and are off by default.
 
 ## Features
 
 - **Leaked keys.** Matches the page and its scripts against provider-specific key formats, and decodes JWTs to catch a Supabase `service_role` key shipped to the browser.
 - **Open API routes.** Pulls `/api/...` paths out of the bundle, requests each one without logging in, and reports only those that return personal information.
-- **Missing rate limits.** Finds a sign-in endpoint and sends ten wrong logins, watching for a `429` or rate limit headers.
-- **Verbose errors.** Triggers 404s and one malformed request, then reads the responses for stack traces, database errors and server file paths.
+- **Missing rate limits.** An opt-in active check. Finds a login endpoint and sends ten wrong logins, watching for a `429` or rate limit headers.
+- **Verbose errors.** Triggers 404s, plus one malformed request when active checks are on, then reads the responses for stack traces, database errors and server file paths.
 - **Missing HTTPS.** Loads the secure address, then requests the insecure one without following redirects.
 - **Honest verdicts.** Each check returns `pass`, `attention` or `not_checked`. A check that could not gather what it needed says so and never reports a pass.
-- **SSRF-safe by construction.** Private, loopback and cloud metadata addresses are refused at connect time, and every scan has hard request, time and size limits.
+- **Safe by default.** Without active checks, every request is a `GET` or `HEAD`. Private, loopback and cloud metadata addresses are refused at connect time, and every scan has hard request, time and size limits.
 
 ## Quick start
 
@@ -32,13 +32,13 @@ npm install
 npm run dev        # http://localhost:3000
 ```
 
-Open the page, paste the URL of an app you own, tick the permission box and run the scan.
+Open the page, paste the URL of an app you own, tick the permission box and run the scan. Tick "Also run active checks" as well to include the login rate limit test.
 
 ## How it works
 
 ```mermaid
 flowchart LR
-    U[Browser form] -->|POST /api/scan url + consent| A[API route]
+    U[Browser form] -->|POST /api/scan url, consent, active| A[API route]
     A -->|5 per IP per 15 min, 3 at once| S[Scanner]
     S --> H[HTTPS check]
     S --> C[Collect page and scripts]
@@ -54,19 +54,21 @@ The scanner fetches the target's home page and the scripts it loads once, and ev
 
 ### What the scanner sends
 
-Most requests are plain `GET`s. Two checks send `POST`s, and this section lists every request a scan can make.
+A scan runs in one of two modes. **Passive** is the default and sends only `GET` requests. **Active** adds a small number of `POST`s and runs only when the request to `/api/scan` carries `"active": true`, which the form sends only when "Also run active checks" is ticked.
 
-| Check | Requests |
-| --- | --- |
-| Collect | `GET /`, then `GET` each script the page loads |
-| HTTPS | `GET` the `https://` address, then `GET` the `http://` address without following the redirect |
-| Open routes | `GET` each `/api/...` path found in the bundle, plus one made-up path as a control |
-| Verbose errors | `GET` two random paths that should 404, then one `POST` with truncated JSON (`{"quietword":`) to an API path |
-| Rate limits | Up to 4 `POST`s to find a sign-in endpoint, then up to 10 in total to that endpoint, each with `{"email":"quietword-scan@example.com","password":"this-is-not-a-real-password"}` |
+| Check | Passive (default) | Active adds |
+| --- | --- | --- |
+| Collect | `GET /`, then `GET` each script the page loads | nothing |
+| HTTPS | `GET` the `https://` address, then `GET` the `http://` address without following the redirect | nothing |
+| Open routes | `GET` each `/api/...` path found in the bundle, plus one made-up path as a control | nothing |
+| Verbose errors | `GET` two random paths that should 404 | one `POST` with truncated JSON (`{"quietword":`) to an API path |
+| Rate limits | nothing; reported as not checked | up to 4 `POST`s to find a login endpoint, then up to 10 in total to that endpoint, each with `{"email":"quietword-scan@example.com","password":"this-is-not-a-real-password"}` |
 
-No request carries a payload designed to execute anything: no injection strings, no scripts, no file uploads. It never signs in, and it never sends `PUT`, `PATCH` or `DELETE`.
+The passive guarantee does not rest on each check behaving. `ScanContext.visit` in [`src/lib/scanner/context.ts`](src/lib/scanner/context.ts) is the only way a check sends a request, and in passive mode it refuses any method other than `GET` or `HEAD` before a socket opens.
 
-The rate limit check is not read-only in every case. Its candidate paths include `/api/signup`, `/api/waitlist`, `/api/subscribe` and `/api/contact`. On an app that accepts any address at those routes, the probe can create a sign-up, waitlist or contact entry for `quietword-scan@example.com`. That is one more reason to scan only what you own.
+Active mode sends wrong logins only to paths that look like a login (`login`, `log-in`, `signin`, `sign-in`). A path is skipped if it also looks like it could create something: sign-up, register, password reset, OTP, magic link, email, verify, invite, waitlist, subscribe, contact or newsletter. A wrong password changes nothing on a login route. The rule is `isProbeTarget` in [`src/lib/scanner/checks/rate-limit.ts`](src/lib/scanner/checks/rate-limit.ts).
+
+In either mode, no request carries a payload designed to execute anything: no injection strings, no scripts, no file uploads. Quietword never signs in, and it never sends `PUT`, `PATCH` or `DELETE`.
 
 ### Limits on every scan
 
@@ -110,6 +112,7 @@ All settings are optional. Copy `.env.example` to `.env.local` to set them.
 
 - **It is not an audit.** It runs five checks on what an app shows the outside world. It does not test Supabase row-level security, authorization logic, injection or dependency CVEs, and it does not read source repositories.
 - **It cannot see behind a login.** It never signs in.
+- **The rate limit check needs active mode.** A passive scan reports it as not checked. It also tests only login routes, so a sign-up or password reset route with no limit goes unreported.
 - **The rate limit check can be wrong.** A ten-request burst cannot tell "no limiter" apart from "limiter set at twenty". The report says so.
 - **The open routes check sees only routes the public bundle references.**
 - **Key detection sees the scripts the home page loads.** A key used only on a lazily loaded admin page will not turn up.
@@ -119,7 +122,7 @@ All settings are optional. Copy `.env.example` to `.env.local` to set them.
 ## Development
 
 ```bash
-npm test           # 261 unit tests, no network needed
+npm test           # 287 unit tests, no network needed
 npm run lint       # tsc --noEmit
 npm run build      # production build
 ```
