@@ -1,113 +1,129 @@
 # Quietword
 
-A free security scan for people who built an app with AI coding tools and have never had anyone check
-it for holes. Paste a live URL, get a plain-language report on five things that commonly go wrong.
+A free security scan for apps built with AI coding tools: paste a URL, get a plain-language report on five common holes.
+
+![TypeScript](https://img.shields.io/badge/language-TypeScript-3178c6.svg)
+![Next.js 15](https://img.shields.io/badge/Next.js-15-black.svg)
 
 ![The Quietword report: "One check found something worth fixing. One could not be run at all," then the first three checks, one marked worth fixing, one looks fine and one not checked, each with why it matters and what to do.](assets/hero.png)
 
-The audience is a founder who shipped something real with an AI coding tool, who can deploy but
-cannot read a bundle and spot an API key. The report is written for that
-person, so it says what someone could do with a finding rather than which header was missing.
+Quietword is for founders who shipped a real app with an AI coding tool and have never had anyone check it. They can deploy, but they cannot read a JavaScript bundle and spot an API key. The report is written for that person. It says what someone could do with each finding and what to do next, not which header was missing.
 
-## The five checks
+> **Only scan sites you own or have permission to test.** The form requires a tick confirming that, and the API refuses a scan without it.
 
-| Check | What it does | Confidence |
-| --- | --- | --- |
-| Keys in the frontend | Reads the page and its scripts, matches against provider-specific key formats, decodes JWTs to catch a Supabase `service_role` key | High on a finding, medium on a clean result |
-| Open API routes | Pulls `/api/...` paths out of the bundle, asks each one for data with no login, reports only the ones that return personal information | High on a finding, medium on a clean result |
-| Rate limiting | Finds a sign-in shaped endpoint, sends ten deliberately wrong logins, watches for a 429 or rate limit headers | High on a pass, medium on a finding |
-| Verbose errors | Asks for pages that do not exist and sends one malformed request, then reads every error for stack traces, database errors, and server file paths | High on a finding, medium on a clean result |
-| HTTPS enforcement | Loads the secure address, then asks for the insecure one without following the redirect | High either way |
+## Features
 
-Each check returns `pass`, `attention`, or `not_checked`. `not_checked` is the answer when the check
-could not gather what it needed. It never becomes a pass.
+- **Leaked keys.** Matches the page and its scripts against provider-specific key formats, and decodes JWTs to catch a Supabase `service_role` key shipped to the browser.
+- **Open API routes.** Pulls `/api/...` paths out of the bundle, requests each one without logging in, and reports only those that return personal information.
+- **Missing rate limits.** Finds a sign-in endpoint and sends ten wrong logins, watching for a `429` or rate limit headers.
+- **Verbose errors.** Triggers 404s and one malformed request, then reads the responses for stack traces, database errors and server file paths.
+- **Missing HTTPS.** Loads the secure address, then requests the insecure one without following redirects.
+- **Honest verdicts.** Each check returns `pass`, `attention` or `not_checked`. A check that could not gather what it needed says so and never reports a pass.
+- **SSRF-safe by construction.** Private, loopback and cloud metadata addresses are refused at connect time, and every scan has hard request, time and size limits.
 
-## What it deliberately does not do
+## Quick start
 
-- It is not an audit. It is five checks on what an app shows the outside world.
-- It never signs in, so it cannot see anything behind a login.
-- It does not test Supabase row-level security, authorisation logic, injection, or dependency CVEs.
-- It does not read repositories. The input is a URL.
-- It sends no payload designed to execute anything. The only thing it sends that is not a plain
-  request is a deliberately wrong email and password, to see whether the login has a rate limit.
-- There are no accounts, no saved history, and no payment.
-
-## Running it
+Tested with Node.js 26.
 
 ```bash
+git clone https://github.com/gshepptech/quietword.git
+cd quietword
 npm install
 npm run dev        # http://localhost:3000
 ```
 
-```bash
-npm test           # 200+ unit tests, no network needed
-npm run lint       # tsc --noEmit
-npm run build
+Open the page, paste the URL of an app you own, tick the permission box and run the scan.
+
+## How it works
+
+```mermaid
+flowchart LR
+    U[Browser form] -->|POST /api/scan url + consent| A[API route]
+    A -->|5 per IP per 15 min, 3 at once| S[Scanner]
+    S --> H[HTTPS check]
+    S --> C[Collect page and scripts]
+    C --> K[Keys]
+    C --> R[Open routes]
+    C --> L[Rate limits]
+    C --> E[Verbose errors]
+    S -->|guarded requests| T[(Target site)]
+    S --> P[Plain-language report]
 ```
 
-Copy `.env.example` to `.env.local` if you want to set the contact URL that appears in the scanner's
-user agent, or point the manual review link somewhere real. Neither is required to run it.
+The scanner fetches the target's home page and the scripts it loads once, and every check reads from that shared collection. Each check is split into pure analysis functions and a single `run` that does the I/O. The tests exercise the pure half, because a false pass would come from there.
 
-## Scanning safely
+### What the scanner sends
 
-Scanning a URL somebody pasted means sending traffic to a third party server, so the limits are built
-into the code rather than written on a wall:
+Most requests are plain `GET`s. Two checks send `POST`s, and this section lists every request a scan can make.
 
-- The target's resolved addresses are checked against a denylist (loopback, private ranges,
-  link-local including cloud metadata, CGNAT, multicast, reserved) inside the socket's own DNS lookup,
-  so the address that gets connected to is the address that got checked. IP literals, which skip DNS
-  entirely, hit a second gate before the socket opens.
-- Redirects are followed by hand, four hops maximum, each one revalidated.
-- One scan is capped at 40 requests, 25 seconds, and 6 MB.
+| Check | Requests |
+| --- | --- |
+| Collect | `GET /`, then `GET` each script the page loads |
+| HTTPS | `GET` the `https://` address, then `GET` the `http://` address without following the redirect |
+| Open routes | `GET` each `/api/...` path found in the bundle, plus one made-up path as a control |
+| Verbose errors | `GET` two random paths that should 404, then one `POST` with truncated JSON (`{"quietword":`) to an API path |
+| Rate limits | Up to 4 `POST`s to find a sign-in endpoint, then up to 10 in total to that endpoint, each with `{"email":"quietword-scan@example.com","password":"this-is-not-a-real-password"}` |
+
+No request carries a payload designed to execute anything: no injection strings, no scripts, no file uploads. It never signs in, and it never sends `PUT`, `PATCH` or `DELETE`.
+
+The rate limit check is not read-only in every case. Its candidate paths include `/api/signup`, `/api/waitlist`, `/api/subscribe` and `/api/contact`. On an app that accepts any address at those routes, the probe can create a sign-up, waitlist or contact entry for `quietword-scan@example.com`. That is one more reason to scan only what you own.
+
+### Limits on every scan
+
+These limits are enforced in code. No path through the code can exceed them.
+
+- Resolved addresses are checked against a denylist (loopback, private ranges, link-local including cloud metadata, CGNAT, multicast, reserved) inside the socket's own DNS lookup. The address that gets connected to is the address that was checked. IP literals, which skip DNS, are checked before the socket opens.
+- Redirects are followed by hand, at most four hops, each one checked again.
+- One scan makes at most 40 requests, runs at most 25 seconds and reads at most 6 MB.
 - `POST /api/scan` allows 5 scans per IP per 15 minutes, 3 at a time.
-- Every request says `QuietwordScanner/0.1`. It does not pretend to be a browser.
-- The form requires a tick confirming you own the app or have permission to test it, and the API
-  refuses without it.
+- Every request identifies itself as `QuietwordScanner/0.1`. It does not pretend to be a browser.
 
-These are ceilings, not guidance. A scan cannot exceed them by taking a different path through the
-code.
-
-## How it is put together
-
-Next.js App Router, TypeScript in strict mode, Tailwind v4, `undici` for outbound requests, Vitest for
-tests. One page, one API route.
+### Project layout
 
 ```
+src/app/              the page and the /api/scan route
+src/components/       the form and the report
+src/lib/ratelimit.ts  limits on Quietword's own endpoint
 src/lib/scanner/
-  addresses.ts    the address and hostname denylist
-  net.ts          guarded request, connect-time lookup, budget
-  url.ts          what counts as a scannable address
-  collect.ts      page and bundle gathering, shared by the checks
-  context.ts      per-scan state
-  index.ts        orchestration
-  checks/         one file per check
+  addresses.ts        address and hostname denylist
+  net.ts              guarded requests, connect-time lookup, budget
+  url.ts              what counts as a scannable address
+  collect.ts          page and script gathering, shared by the checks
+  context.ts          per-scan state
+  index.ts            orchestration
+  checks/             one file per check
 ```
 
-Each check splits into pure analysis functions and one `run` that does the I/O. The pure half is what
-the tests exercise, because a false pass would come from there.
+Next.js App Router, TypeScript in strict mode, Tailwind v4, `undici` for outbound requests, Vitest for tests.
 
-## Honest limitations
+## Configuration
 
-- **The rate limit check can be wrong.** A ten request burst cannot tell "no limiter" apart from
-  "limiter set at twenty". The report says so where the user will read it, but some findings will not
-  be real problems.
-- **The auth check only sees routes it can find.** Routes the public bundle never references are
-  invisible to it.
-- **Secret detection sees the entry chunk.** Code splitting means a key used only on an admin page
-  will not turn up.
-- **Rate limiting is in memory.** It resets on restart and does not hold across more than one
-  instance. Fine for one box, wrong for two.
-- **`npm audit` reports four advisories, all high.** They are in `postcss`, `nanoid`, and `sharp`,
-  none of which this repo asks for by name. The copy of `postcss` that Tailwind and Vitest pull in
-  is already past the affected range; the copy Next.js pins is not, and `sharp` arrives only through
-  Next. A clean tree means moving to `next@16.3.1`, which is a major version up from the 15.5 line
-  this is built on, so it is an upgrade to plan rather than a patch to apply. All four sit in build
-  tooling and in the image optimiser, and this app serves no images through `next/image`.
+All settings are optional. Copy `.env.example` to `.env.local` to set them.
+
+| Variable | Purpose |
+| --- | --- |
+| `SCANNER_CONTACT_URL` | Appended to the user agent, so a site owner reading their logs can find out who scanned them |
+| `NEXT_PUBLIC_REVIEW_CONTACT` | Where the "book a manual review" link points (`mailto:` or a booking URL) |
+| `NEXT_PUBLIC_REVIEW_PRICE` | Price shown for the manual review, printed as given (for example `$180`) |
+
+## Limitations
+
+- **It is not an audit.** It runs five checks on what an app shows the outside world. It does not test Supabase row-level security, authorization logic, injection or dependency CVEs, and it does not read source repositories.
+- **It cannot see behind a login.** It never signs in.
+- **The rate limit check can be wrong.** A ten-request burst cannot tell "no limiter" apart from "limiter set at twenty". The report says so.
+- **The open routes check sees only routes the public bundle references.**
+- **Key detection sees the scripts the home page loads.** A key used only on a lazily loaded admin page will not turn up.
+- **Quietword's own rate limit is in memory.** It resets on restart and does not hold across more than one instance.
+- **`npm audit` still reports advisories.** They are in `postcss` (pinned by Next.js 15) and in Vitest and its `tinypool` dependency (development only). Clearing them means moving to Next.js 16 and Vitest 5, which are major upgrades.
+
+## Development
+
+```bash
+npm test           # 261 unit tests, no network needed
+npm run lint       # tsc --noEmit
+npm run build      # production build
+```
 
 ## Licence
 
-Proprietary, all rights reserved. See `LICENCE`.
-
-Deliberately not open source: this sends deliberate request bursts at whatever
-address it is given, and the licence carries the disclaimers that go with that.
-Opening it later is easy; closing it again is not.
+Proprietary, all rights reserved. See [LICENCE](LICENCE).
