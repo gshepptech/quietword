@@ -129,7 +129,7 @@ export function Scanner() {
             </label>
             <p id={activeNoteId} className="text-[0.8125rem] leading-relaxed text-muted">
               Sends up to ten wrong logins to your sign-in address and one malformed request to your
-              API. Only turn this on for an app you own or have permission to test. With it off,
+              API. Only turn this on if you own the app or have written permission to test it. With it off,
               Quietword only reads your app and skips the login check.
             </p>
           </div>
