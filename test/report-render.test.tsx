@@ -22,6 +22,7 @@ function check(overrides: Partial<CheckResult>): CheckResult {
 function report(checks: CheckResult[]): ScanReport {
   return {
     target: "https://testapp.example",
+    active: false,
     startedAt: new Date().toISOString(),
     durationMs: 4200,
     checks,

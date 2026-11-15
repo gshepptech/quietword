@@ -31,11 +31,20 @@ const LATER_CHECKS: Check[] = [secretsCheck, authCheck, rateLimitCheck, errorsCh
 /** Report order. Findings people can act on first, HTTPS last because it is usually fine. */
 const DISPLAY_ORDER = ["secrets", "auth", "rate_limit", "errors", "https"] as const;
 
-export async function runScan(target: URL): Promise<ScanReport> {
+export interface ScanOptions {
+  /**
+   * Opt in to the requests that are not GET or HEAD: wrong logins for the rate
+   * limit check and one malformed POST for the error check. Off by default.
+   */
+  active?: boolean;
+}
+
+export async function runScan(target: URL, options: ScanOptions = {}): Promise<ScanReport> {
+  const active = options.active === true;
   const startedAt = new Date();
   const budget = new ScanBudget();
   const dispatcher = createDispatcher();
-  const ctx = createContext(target, budget, dispatcher);
+  const ctx = createContext(target, budget, dispatcher, active);
   const checks: CheckResult[] = [];
 
   try {
@@ -70,6 +79,7 @@ export async function runScan(target: URL): Promise<ScanReport> {
 
   return {
     target: target.origin,
+    active,
     startedAt: startedAt.toISOString(),
     durationMs: Date.now() - startedAt.getTime(),
     checks,

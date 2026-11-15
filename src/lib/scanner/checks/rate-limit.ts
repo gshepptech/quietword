@@ -10,21 +10,27 @@ import { type Check, notChecked, result } from "./shared";
  */
 export const BURST = 10;
 
-/** Endpoints worth protecting, tried when the bundle gave nothing away. */
-export const COMMON_AUTH_PATHS = [
-  "/api/auth/login",
-  "/api/login",
-  "/api/auth/signup",
-  "/api/signup",
-  "/api/auth/register",
-  "/api/auth/forgot-password",
-  "/api/forgot-password",
-  "/api/waitlist",
-  "/api/subscribe",
-  "/api/contact",
-];
+/**
+ * Login endpoints, tried when the bundle gave nothing away. Only logins: a
+ * wrong password changes nothing, whereas a sign-up, waitlist, contact form or
+ * password reset would create a record or send an email on the owner's app.
+ */
+export const COMMON_AUTH_PATHS = ["/api/auth/login", "/api/login"];
 
-const AUTH_SHAPED = /(login|signin|sign-in|signup|sign-up|register|forgot|reset|password|otp|magic|verify|waitlist|subscribe|contact)/i;
+const LOGIN_SHAPED = /(login|log-in|signin|sign-in)/i;
+
+/**
+ * Paths that are never sent a POST, even when they look like a login, because
+ * the request could create something: an account, a subscriber, a message, a
+ * reset token, or a magic link email.
+ */
+const CREATES_RECORDS =
+  /(signup|sign-up|register|forgot|reset|otp|magic|email|verify|invite|waitlist|subscribe|contact|newsletter)/i;
+
+/** Whether the rate limit check may send its wrong-login POSTs to this path. */
+export function isProbeTarget(path: string): boolean {
+  return LOGIN_SHAPED.test(path) && !CREATES_RECORDS.test(path);
+}
 
 /**
  * Headers that only a rate limiter sends. Presence of one of these is direct
@@ -107,10 +113,13 @@ const PROBE_BODY = JSON.stringify({
 
 const TITLE = "Limits on how fast someone can guess passwords";
 
-const METHOD_BASE = `Quietword found the addresses your app uses for things like signing in or signing up, then sent ${BURST} requests to one of them in a row with a deliberately wrong email and password. It watched for the server turning requests away or telling it how many were left. Nothing resembling a real account was touched.`;
+const METHOD_BASE = `Quietword found the address your app uses for signing in, then sent ${BURST} requests to one of them in a row with a deliberately wrong email and password. It watched for the server turning requests away or telling it how many were left. Nothing resembling a real account was touched.`;
 
-function pickEndpoint(ctx: ScanContext): string[] {
-  const discovered = ctx.collected.apiPaths.filter((path) => AUTH_SHAPED.test(path));
+const PASSIVE_METHOD =
+  "This check sends wrong logins to your sign-in address, which is more than reading your app, so it only runs when active checks are turned on. This scan had them off and sent nothing to your login.";
+
+export function pickEndpoint(ctx: ScanContext): string[] {
+  const discovered = ctx.collected.apiPaths.filter(isProbeTarget);
   const merged = [...discovered];
   for (const path of COMMON_AUTH_PATHS) {
     if (!merged.includes(path)) merged.push(path);
@@ -122,6 +131,16 @@ export const rateLimitCheck: Check = {
   id: "rate_limit",
   title: TITLE,
   async run(ctx: ScanContext): Promise<CheckResult> {
+    if (!ctx.active) {
+      return notChecked("rate_limit", TITLE, {
+        headline: "Active checks were off, so Quietword did not test your login.",
+        why: "Finding out whether a login has a limit means sending it wrong passwords, and Quietword only does that when you say the app is yours to test.",
+        nextStep:
+          "If you own this app or have permission to test it, run the scan again with active checks turned on.",
+        method: PASSIVE_METHOD,
+      });
+    }
+
     const candidates = pickEndpoint(ctx);
     const observed: ObservedResponse[] = [];
     let endpoint: string | null = null;
@@ -157,11 +176,11 @@ export const rateLimitCheck: Check = {
 
     if (!endpoint) {
       return notChecked("rate_limit", TITLE, {
-        headline: "Quietword could not find a sign-in or sign-up address to test.",
+        headline: "Quietword could not find a sign-in address to test.",
         why: "Without an endpoint to send requests to there is nothing to measure, and reporting a pass would be inventing a result.",
         nextStep: lastFailure
           ? `If your app does have a login, its address is named in a way Quietword did not guess. Quietword last saw: ${lastFailure}.`
-          : "If your app has a login, a signup, or a password reset, ask whoever reviews it to test those directly.",
+          : "If your app has a login, a sign-up, or a password reset, ask whoever reviews it to test those directly.",
         method: METHOD_BASE,
       });
     }

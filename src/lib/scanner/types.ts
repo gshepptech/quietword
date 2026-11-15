@@ -39,6 +39,8 @@ export interface CheckResult {
 
 export interface ScanReport {
   target: string;
+  /** Whether the user opted in to the checks that send POST requests. */
+  active: boolean;
   startedAt: string;
   durationMs: number;
   checks: CheckResult[];

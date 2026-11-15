@@ -3,11 +3,11 @@ import { describe, expect, it } from "vitest";
 
 import { authCheck, COMMON_API_PATHS } from "@/lib/scanner/checks/auth";
 import { errorsCheck } from "@/lib/scanner/checks/errors";
-import { rateLimitCheck } from "@/lib/scanner/checks/rate-limit";
+import { isProbeTarget, pickEndpoint, rateLimitCheck } from "@/lib/scanner/checks/rate-limit";
 import { secretsCheck } from "@/lib/scanner/checks/secrets";
-import type { ScanContext } from "@/lib/scanner/context";
+import { ActiveCheckRefusedError, createContext, type ScanContext } from "@/lib/scanner/context";
 import { runScan, TargetUnreachableError } from "@/lib/scanner";
-import { ScanBudget, type Probe, type ProbeResponse } from "@/lib/scanner/net";
+import { ScanBudget, type Probe, type ProbeOptions, type ProbeResponse } from "@/lib/scanner/net";
 
 /**
  * These drive each check's real `run` against a stubbed set of responses. The
@@ -41,13 +41,24 @@ function answer(url: string, reply: Reply): ProbeResponse {
   };
 }
 
+interface Sent {
+  method: string;
+  path: string;
+}
+
+type FakeContext = ScanContext & { sent: Sent[] };
+
 function fakeContext(
   routes: Record<string, Reply>,
   fallback: Reply = { status: 404, body: '{"error":"Not found"}' },
   collected: Partial<ScanContext["collected"]> = {},
-): ScanContext {
+  active = true,
+): FakeContext {
   const captured: ProbeResponse[] = [];
-  const ctx: ScanContext = {
+  const sent: Sent[] = [];
+  const ctx: FakeContext = {
+    sent,
+    active,
     target: new URL(ORIGIN),
     origin: ORIGIN,
     budget: new ScanBudget(),
@@ -55,9 +66,10 @@ function fakeContext(
     captured,
     failures: [],
     collected: { page: null, pageError: null, scripts: [], bundleText: "", apiPaths: [], ...collected },
-    async visit(url: string): Promise<Probe> {
+    async visit(url: string, options?: ProbeOptions): Promise<Probe> {
       ctx.budget.spendRequest();
       const path = new URL(url).pathname;
+      sent.push({ method: options?.method ?? "GET", path });
       const response = answer(url, routes[path] ?? fallback);
       captured.push(response);
       return response;
@@ -209,6 +221,55 @@ describe("rateLimitCheck", () => {
     const check = await rateLimitCheck.run(fakeContext({}));
     expect(check.verdict).toBe("not_checked");
   });
+
+  it("sends nothing and says not checked when active checks are off", async () => {
+    const ctx = fakeContext({ "/api/auth/login": { status: 401 } }, undefined, {}, false);
+    const check = await rateLimitCheck.run(ctx);
+
+    expect(check.verdict).toBe("not_checked");
+    expect(check.headline).toContain("Active checks were off");
+    expect(ctx.sent).toEqual([]);
+  });
+
+  it("only ever POSTs to login paths", async () => {
+    const ctx = fakeContext({}, undefined, {
+      apiPaths: ["/api/auth/signup", "/api/waitlist", "/api/session/login", "/api/contact"],
+    });
+    await rateLimitCheck.run(ctx);
+
+    const posted = [...new Set(ctx.sent.filter((s) => s.method === "POST").map((s) => s.path))];
+    expect(posted).toEqual(["/api/session/login", "/api/auth/login", "/api/login"]);
+  });
+});
+
+describe("rate limit probe targets", () => {
+  it.each([
+    "/api/signup",
+    "/api/auth/signup",
+    "/api/auth/register",
+    "/api/forgot-password",
+    "/api/auth/reset-password",
+    "/api/waitlist",
+    "/api/subscribe",
+    "/api/contact",
+    "/api/newsletter",
+    "/api/auth/signin/email",
+    "/api/auth/magic-login",
+    "/api/login/otp",
+  ])("never sends wrong logins to %s", (path) => {
+    expect(isProbeTarget(path)).toBe(false);
+  });
+
+  it.each(["/api/login", "/api/auth/login", "/api/auth/sign-in", "/api/v1/signin"])(
+    "treats %s as a login",
+    (path) => {
+      expect(isProbeTarget(path)).toBe(true);
+    },
+  );
+
+  it("falls back to common login paths only", () => {
+    expect(pickEndpoint(fakeContext({}))).toEqual(["/api/auth/login", "/api/login"]);
+  });
 });
 
 describe("errorsCheck", () => {
@@ -232,6 +293,39 @@ describe("errorsCheck", () => {
     const check = await errorsCheck.run(fakeContext({}));
     expect(check.verdict).toBe("pass");
     expect(check.confidence).toBe("medium");
+  });
+
+  it("sends the malformed POST when active checks are on", async () => {
+    const ctx = fakeContext({});
+    await errorsCheck.run(ctx);
+    expect(ctx.sent.filter((s) => s.method === "POST")).toHaveLength(1);
+  });
+
+  it("sends only GETs, and says so, when active checks are off", async () => {
+    const ctx = fakeContext({}, undefined, {}, false);
+    const check = await errorsCheck.run(ctx);
+
+    expect(ctx.sent.length).toBeGreaterThan(0);
+    expect(ctx.sent.every((s) => s.method === "GET")).toBe(true);
+    expect(check.method).toContain("Active checks were off");
+  });
+});
+
+describe("passive scan guard", () => {
+  // No dispatcher is needed: a refused request never reaches the network.
+  const passive = () => createContext(new URL(ORIGIN), new ScanBudget(), {} as Agent, false);
+
+  it("refuses a POST when active checks are off", async () => {
+    await expect(passive().visit(`${ORIGIN}/api/login`, { method: "POST" })).rejects.toBeInstanceOf(
+      ActiveCheckRefusedError,
+    );
+  });
+
+  it("does not count a refused request against the budget", async () => {
+    const ctx = passive();
+    await ctx.visit(`${ORIGIN}/api/login`, { method: "POST" }).catch(() => undefined);
+    expect(ctx.budget.requestsUsed).toBe(0);
+    expect(ctx.captured).toEqual([]);
   });
 });
 

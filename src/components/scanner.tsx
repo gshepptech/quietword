@@ -16,11 +16,14 @@ type State =
 export function Scanner() {
   const [url, setUrl] = useState("");
   const [consent, setConsent] = useState(false);
+  const [active, setActive] = useState(false);
   const [state, setState] = useState<State>({ status: "idle" });
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const urlId = useId();
   const consentId = useId();
+  const activeId = useId();
+  const activeNoteId = useId();
   const noteId = useId();
 
   const running = state.status === "running";
@@ -34,7 +37,7 @@ export function Scanner() {
       const response = await fetch("/api/scan", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ url, consent }),
+        body: JSON.stringify({ url, consent, active }),
       });
       const payload: unknown = await response.json();
 
@@ -107,10 +110,35 @@ export function Scanner() {
           </label>
         </div>
 
+        <div className="mt-2 flex items-start gap-3">
+          <input
+            id={activeId}
+            type="checkbox"
+            checked={active}
+            onChange={(event) => setActive(event.target.checked)}
+            aria-describedby={activeNoteId}
+            disabled={running}
+            className="mt-2.5 size-4 shrink-0 accent-[#10151b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed"
+          />
+          <div>
+            <label
+              htmlFor={activeId}
+              className="flex min-h-11 cursor-pointer items-center text-[0.875rem] leading-relaxed text-muted"
+            >
+              Also run active checks
+            </label>
+            <p id={activeNoteId} className="text-[0.8125rem] leading-relaxed text-muted">
+              Sends up to ten wrong logins to your sign-in address and one malformed request to your
+              API. Only turn this on for an app you own or have permission to test. With it off,
+              Quietword only reads your app and skips the login check.
+            </p>
+          </div>
+        </div>
+
         <p id={noteId} className="mt-6 border-t border-line pt-4 text-[0.8125rem] text-muted">
-          Quietword sends about thirty requests from its own server, over roughly twenty seconds. It
-          never signs in, never sends anything designed to break your app, and refuses any address on
-          a private network.
+          Quietword sends at most forty requests from its own server, over at most twenty-five
+          seconds. Without active checks every one of them is a plain read. It never signs in, never
+          sends anything designed to break your app, and refuses any address on a private network.
         </p>
         </div>
       </form>

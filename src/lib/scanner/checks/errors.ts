@@ -77,8 +77,12 @@ export function shouldInspect(status: number, contentType: string): boolean {
 
 const TITLE = "What your app says when something goes wrong";
 
-const METHOD =
-  "Quietword asked for addresses that do not exist and sent one deliberately broken request, then read every error your app sent back during the scan. It looked for the sort of output that is written for a developer reading a terminal: file paths from your server, database errors, and stack traces.";
+const LOOKED_FOR =
+  "It looked for the sort of output that is written for a developer reading a terminal: file paths from your server, database errors, and stack traces.";
+
+const ACTIVE_METHOD = `Quietword asked for addresses that do not exist and sent one deliberately broken request, then read every error your app sent back during the scan. ${LOOKED_FOR}`;
+
+const PASSIVE_METHOD = `Quietword asked for addresses that do not exist, then read every error your app sent back during the scan. ${LOOKED_FOR} Active checks were off, so it did not send the broken request that most often shakes an error loose.`;
 
 function randomPath(): string {
   return Math.random().toString(36).slice(2, 12);
@@ -88,6 +92,7 @@ export const errorsCheck: Check = {
   id: "errors",
   title: TITLE,
   async run(ctx: ScanContext): Promise<CheckResult> {
+    const method = ctx.active ? ACTIVE_METHOD : PASSIVE_METHOD;
     const probes = [`/${randomPath()}`, `/api/${randomPath()}`];
 
     for (const path of probes) {
@@ -97,9 +102,10 @@ export const errorsCheck: Check = {
 
     // A route that exists, handed input it cannot possibly parse. This is the
     // probe that most often finds an unhandled exception. It is malformed, not
-    // malicious: no payload here is designed to execute anything.
+    // malicious: no payload here is designed to execute anything. It is a POST,
+    // so it is an active check and only runs when the user opted in.
     const target = ctx.collected.apiPaths[0] ?? "/api/health";
-    if (!ctx.budget.exhausted()) {
+    if (ctx.active && !ctx.budget.exhausted()) {
       await ctx.visit(ctx.origin + target, {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -117,7 +123,7 @@ export const errorsCheck: Check = {
         why: "This check needs to see how your app behaves when something goes wrong, and nothing went wrong during the scan.",
         nextStep:
           "Not a problem in itself. If you want to know for certain, ask whoever reviews your app to try it with a broken request while watching what comes back.",
-        method: METHOD,
+        method,
       });
     }
 
@@ -140,7 +146,7 @@ export const errorsCheck: Check = {
         why: "Error output like this names your files, your libraries, and sometimes your database structure. It is the map somebody uses to work out what else to try.",
         nextStep:
           "Switch your app to production mode on your host, which turns detailed errors off in most frameworks. Then add a catch-all handler that logs the real error where you can read it and sends the visitor a short message with no detail in it.",
-        method: `${METHOD} It read ${inspected.length} ${inspected.length === 1 ? "answer" : "answers"} from your app.`,
+        method: `${method} It read ${inspected.length} ${inspected.length === 1 ? "answer" : "answers"} from your app.`,
         evidence,
       });
     }
@@ -152,7 +158,7 @@ export const errorsCheck: Check = {
       why: "Error pages that name your files and libraries give away how your app is built, and yours did not.",
       nextStep:
         "Medium confidence, because Quietword only broke your app in a few ways. A different mistake somewhere else could still produce a detailed error.",
-      method: `${METHOD} It read ${inspected.length} ${inspected.length === 1 ? "answer" : "answers"} from your app.`,
+      method: `${method} It read ${inspected.length} ${inspected.length === 1 ? "answer" : "answers"} from your app.`,
     });
   },
 };

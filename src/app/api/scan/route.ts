@@ -2,27 +2,13 @@ import { NextResponse } from "next/server";
 
 import { beginScan, endScan, releaseScanSlot, takeScanSlot } from "@/lib/ratelimit";
 import { clientKey } from "@/lib/client-key";
+import { readScanRequest } from "@/lib/scan-request";
 import { normaliseTarget, runScan, TargetUnreachableError } from "@/lib/scanner";
 
 // The scan resolves DNS and opens sockets, so it needs the Node runtime. It is
 // also never cacheable: the answer is about a live third party server.
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-interface ScanRequest {
-  url: string;
-  consent: boolean;
-}
-
-function readBody(value: unknown): ScanRequest | string {
-  if (typeof value !== "object" || value === null) return "Send a url and a consent tick.";
-  const body = value as Record<string, unknown>;
-  if (typeof body["url"] !== "string") return "Paste the address of your live app to start.";
-  if (body["consent"] !== true) {
-    return "Tick the box to confirm you own this app or have permission to test it.";
-  }
-  return { url: body["url"], consent: true };
-}
 
 export async function POST(request: Request): Promise<NextResponse> {
   let payload: unknown;
@@ -32,7 +18,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "That request did not arrive in one piece." }, { status: 400 });
   }
 
-  const parsed = readBody(payload);
+  const parsed = readScanRequest(payload);
   if (typeof parsed === "string") {
     return NextResponse.json({ error: parsed }, { status: 400 });
   }
@@ -63,7 +49,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   try {
-    const report = await runScan(target.url);
+    const report = await runScan(target.url, { active: parsed.active });
     return NextResponse.json(report, { headers: { "cache-control": "no-store" } });
   } catch (error) {
     if (error instanceof TargetUnreachableError) {
