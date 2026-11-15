@@ -9,7 +9,7 @@ A free security scan for apps built with AI coding tools: paste a URL, get a pla
 
 Quietword is for founders who shipped a real app with an AI coding tool and have never had anyone check it. They can deploy, but they cannot read a JavaScript bundle and spot an API key. The report is written for that person. It says what someone could do with each finding and what to do next, not which header was missing.
 
-> **Only scan sites you own or have permission to test.** The form requires a tick confirming that, and the API refuses a scan without it. Active checks, which send wrong logins, are a second opt-in and are off by default.
+> **Only scan sites you own or have permission to test.** The form requires a tick confirming that, and the API refuses a scan without it. Active checks, which send wrong logins, are a second opt-in, off by default, and are only for apps you own or have written permission to test.
 
 ## Features
 
