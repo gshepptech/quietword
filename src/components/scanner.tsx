@@ -9,7 +9,8 @@ type State =
   | { status: "idle" }
   | { status: "running" }
   | { status: "done"; report: ScanReport }
-  // redpen-ignore:generic-error-message "error" here is the state discriminant and a payload key, not a string shown to anyone. Every message a user reads on this screen comes from the server and names what failed and what to do next; the only local fallback is "The scan did not come back. Try again in a minute."
+  // Every message shown in this state comes from the server and names what
+  // failed and what to do next. The only local fallback is in onSubmit.
   | { status: "error"; message: string };
 
 export function Scanner() {

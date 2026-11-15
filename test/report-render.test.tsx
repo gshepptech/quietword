@@ -61,12 +61,8 @@ describe("Report", () => {
       <Report report={report([check({ id: "secrets" }), check({ id: "auth" })])} />,
     );
     expect(html).toContain("came back clean");
-    // This guards the rule that the product never tells anyone their app is
-    // secure. It used to name the brand, because the phrase being banned was
-    // "you're greenlit" back when that was the name, and two renames dragged
-    // the brand along with it until the assertion was testing for a sentence
-    // no version of this product could ever emit. The phrases below are the
-    // ones a clean scan is actually tempted to reach for.
+    // The product never tells anyone their app is secure. These are the
+    // phrases a clean scan is tempted to reach for.
     expect(html).not.toMatch(
       /is secure|fully secure|all clear|no snags|you'?re safe|you are safe|nothing to worry|good to go|passed the audit/i,
     );

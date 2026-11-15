@@ -12,7 +12,7 @@
  * sent, and otherwise refuse to believe the client at all.
  */
 
-/** Set by the platform itself. A client cannot forge these. */
+/** Set by the platform itself. A client cannot spoof these. */
 const PLATFORM_HEADERS = [
   "x-vercel-forwarded-for",
   "cf-connecting-ip",

@@ -7,8 +7,8 @@ const req = (headers: Record<string, string>): Request =>
 
 describe("clientKey", () => {
   it("ignores a client-supplied x-forwarded-for when no proxy is trusted", () => {
-    // The bug this pins: a caller who sets this header used to choose their own
-    // rate-limit bucket, and could reset it at will by changing the value.
+    // Trusting this header would let a caller choose their own rate-limit
+    // bucket and reset it at will by changing the value.
     expect(clientKey(req({ "x-forwarded-for": "9.9.9.9" }))).toBe("untrusted");
     expect(clientKey(req({ "x-forwarded-for": "8.8.8.8" }))).toBe("untrusted");
   });
@@ -19,7 +19,7 @@ describe("clientKey", () => {
     expect(a).toBe(b);
   });
 
-  it("prefers a platform header the client cannot forge", () => {
+  it("prefers a platform header the client cannot spoof", () => {
     const key = clientKey(
       req({ "x-vercel-forwarded-for": "203.0.113.7", "x-forwarded-for": "9.9.9.9" }),
     );

@@ -92,9 +92,8 @@ describe("shouldInspect", () => {
 
 describe("file paths versus URL paths", () => {
   it("does not call a script tag on an /app/ base path a leak", () => {
-    // Vite with base: '/app/' emits exactly this on a correctly built app. The
-    // check used to quote the owner's own script tag back at them as evidence
-    // that their server was leaking file paths.
+    // Vite with base: '/app/' emits exactly this on a correctly built app. It
+    // is the owner's own script tag, not evidence of a leaked file path.
     const page = `<script type="module" crossorigin src="/app/assets/index-a1b2c3.js"></script><h1>404 Not Found</h1>`;
     expect(findLeak(page)).toBeNull();
   });
@@ -119,7 +118,7 @@ describe("file paths versus URL paths", () => {
   });
 
   it("still catches a home directory path with no corroboration needed", () => {
-    expect(findLeak(`Error loading /Users/greg/projects/api/src/index.ts`)?.kind).toBe(
+    expect(findLeak(`Error loading /Users/dev/projects/api/src/index.ts`)?.kind).toBe(
       "a file path from your server",
     );
     expect(findLeak(`require failed: /home/runner/work/app/build/main.js`)?.kind).toBe(

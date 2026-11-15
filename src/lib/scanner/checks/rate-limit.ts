@@ -45,8 +45,8 @@ const LIMIT_HEADERS = [
  * `retry-after` is not one of them. It is defined for 503 and 3xx as well as 429,
  * and CDNs send it routinely on responses that have nothing to do with limiting.
  * Varnish answers `POST /api/auth/login` on a static site with `405` and
- * `retry-after: 0`, which is how this check once reported a login endpoint as
- * protected on a site that has no backend at all.
+ * `retry-after: 0`; counting that would report a login endpoint as protected
+ * on a site that has no backend at all.
  *
  * So it counts only alongside something that does mean a limiter.
  */
