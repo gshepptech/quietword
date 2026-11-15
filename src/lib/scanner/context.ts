@@ -46,7 +46,7 @@ export interface ScanContext {
 }
 
 /** The only methods a scan may send when active checks are off. */
-export const PASSIVE_METHODS: ReadonlySet<string> = new Set(["GET", "HEAD"]);
+const PASSIVE_METHODS: ReadonlySet<string> = new Set(["GET", "HEAD"]);
 
 export class ActiveCheckRefusedError extends Error {
   constructor(method: string) {

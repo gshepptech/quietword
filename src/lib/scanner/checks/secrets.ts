@@ -81,7 +81,7 @@ const PATTERNS: Pattern[] = [
  * browser. Flagging them would be a false alarm, and a false alarm teaches this
  * user to ignore the next result.
  */
-export const PUBLIC_BY_DESIGN = [
+const PUBLIC_BY_DESIGN = [
   "Supabase anon keys",
   "Firebase web config and Google browser API keys",
   "Stripe publishable keys",
