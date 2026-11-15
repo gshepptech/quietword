@@ -27,8 +27,8 @@ import type { NextRequest } from "next/server";
  * it throws an EvalError while the client bundle is starting. That kills
  * hydration outright, and the result is a page that looks finished and does
  * nothing: the form renders, the checkbox ticks, and the button stays disabled
- * because no React state is listening. It cost a while to find, because nothing
- * about the page suggests the policy is the cause.
+ * because no React state is listening. Nothing about the page points at the
+ * policy as the cause.
  *
  * Hot reload also talks to the dev server over a websocket, which
  * `connect-src 'self'` refuses.

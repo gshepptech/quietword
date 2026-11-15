@@ -166,10 +166,9 @@ describe("user agent", () => {
 });
 
 /**
- * Regression. Destroying an undici body while the request is still in flight
- * makes the stream emit an AbortError, and with no listener attached that
- * becomes an uncaught exception. It showed up the first time the scanner
- * followed a real redirect, which is a path the scanner takes on most sites.
+ * Destroying an undici body while the request is still in flight makes the
+ * stream emit an AbortError, and with no listener attached that becomes an
+ * uncaught exception. The scanner does this on every redirect it follows.
  */
 describe("discard", () => {
   it("swallows the error a stream raises when it is thrown away mid-flight", () => {

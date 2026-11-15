@@ -137,9 +137,9 @@ describe("authCheck", () => {
   });
 
   /**
-   * Found against a real app sitting behind Cloudflare Access. Every path
-   * answered 401, so every guessed name in the common list looked protected and
-   * the check reported a clean result over eight routes that were never there.
+   * An app behind an access proxy answers 401 for every path, so every guessed
+   * name in the common list looks protected. Without the invented-path control
+   * the check would report a clean result over routes that do not exist.
    */
   it.each([401, 403])(
     "says not checked when the whole app answers %i, including invented addresses",
