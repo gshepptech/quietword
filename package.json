@@ -2,7 +2,7 @@
   "name": "quietword",
   "version": "0.1.0",
   "private": true,
-  "description": "Free security and launch-readiness scan for apps built with AI coding tools.",
+  "description": "Free security scan for apps built with AI coding tools, with a plain-language report.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
