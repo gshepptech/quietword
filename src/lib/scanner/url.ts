@@ -55,11 +55,6 @@ export function normaliseTarget(input: string): NormalisedTarget {
   return { ok: true, url };
 }
 
-/** The origin the scan works against, e.g. `https://example.com`. */
-export function originOf(url: URL): string {
-  return url.origin;
-}
-
 /** Resolve a path against the target origin, ignoring anything off-origin. */
 export function sameOriginUrl(origin: string, candidate: string): string | null {
   try {

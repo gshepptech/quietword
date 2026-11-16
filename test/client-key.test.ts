@@ -31,7 +31,7 @@ describe("clientKey", () => {
     expect(clientKey(req({ "fly-client-ip": "198.51.100.5" }))).toBe("198.51.100.5");
   });
 
-  it("falls back to no identity rather than a forgeable one", () => {
+  it("falls back to no identity rather than a spoofable one", () => {
     expect(clientKey(req({}))).toBe("untrusted");
     expect(clientKey(req({ "x-real-ip": "9.9.9.9" }))).toBe("untrusted");
   });

@@ -8,14 +8,14 @@ import { type Check, notChecked, result } from "./shared";
  * hammering somebody's server. It is stated in the report so the user can judge
  * the result for themselves.
  */
-export const BURST = 10;
+const BURST = 10;
 
 /**
  * Login endpoints, tried when the bundle gave nothing away. Only logins: a
  * wrong password changes nothing, whereas a sign-up, waitlist, contact form or
  * password reset would create a record or send an email on the owner's app.
  */
-export const COMMON_AUTH_PATHS = ["/api/auth/login", "/api/login"];
+const COMMON_AUTH_PATHS = ["/api/auth/login", "/api/login"];
 
 const LOGIN_SHAPED = /(login|log-in|signin|sign-in)/i;
 

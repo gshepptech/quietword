@@ -39,8 +39,8 @@ const MARKERS: Marker[] = [
 
   // `/app/`, `/srv/` and `/workspace/` are ordinary URL bases. Vite's
   // `base: '/app/'` puts `<script src="/app/assets/index-a1b2c3.js">` on the
-  // page of a correctly built app, and matching that told the owner their app
-  // was leaking server paths, quoting their own script tag back as proof.
+  // page of a correctly built app, so matching the prefix alone would report
+  // the app's own script tag as a leaked server path.
   //
   // So these need corroboration: a line and column, or a stack frame, neither
   // of which appears in a markup attribute.

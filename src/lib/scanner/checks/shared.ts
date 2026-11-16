@@ -55,8 +55,3 @@ export function pathOf(url: string): string {
     return url;
   }
 }
-
-/** True once the scan has no room left for more requests. */
-export function outOfBudget(ctx: ScanContext): boolean {
-  return ctx.budget.exhausted() !== null;
-}

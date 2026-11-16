@@ -32,7 +32,7 @@ function randomPath(): string {
  * An address invented on the spot, asked for before anything else, so the check
  * knows what "this route does not exist" looks like on this particular app.
  */
-export function controlPath(): string {
+function controlPath(): string {
   return `/api/${randomPath()}`;
 }
 
@@ -45,7 +45,7 @@ export function controlPath(): string {
  * routes that were never there, and it reports a clean result built on them.
  * That is the false pass this codebase exists to avoid.
  */
-export function isGated(control: { ok: boolean; status?: number }): boolean {
+function isGated(control: { ok: boolean; status?: number }): boolean {
   if (!control.ok) return false;
   return control.status === 401 || control.status === 403;
 }
