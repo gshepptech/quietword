@@ -7,6 +7,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["test/**/*.test.ts", "test/**/*.test.tsx"],
+    env: { NEXT_PUBLIC_REVIEW_CONTACT: "mailto:review@example.com" },
   },
   resolve: {
     alias: {

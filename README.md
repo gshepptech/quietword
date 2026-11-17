@@ -29,6 +29,7 @@ Tested with Node.js 26.
 git clone https://github.com/gshepptech/quietword.git
 cd quietword
 npm install
+cp .env.example .env.local
 npm run dev        # http://localhost:3000
 ```
 
@@ -100,12 +101,12 @@ Next.js App Router, TypeScript in strict mode, Tailwind v4, `undici` for outboun
 
 ## Configuration
 
-All settings are optional. Copy `.env.example` to `.env.local` to set them.
+Copy `.env.example` to `.env.local` to set these. `NEXT_PUBLIC_REVIEW_CONTACT` is required: `next build`, `next dev` and `next start` stop with an error when it is missing or is not a `mailto:` or `http(s)` link. The others are optional.
 
 | Variable | Purpose |
 | --- | --- |
 | `SCANNER_CONTACT_URL` | Appended to the user agent, so a site owner reading their logs can find out who scanned them |
-| `NEXT_PUBLIC_REVIEW_CONTACT` | Where the "book a manual review" link points (`mailto:` or a booking URL) |
+| `NEXT_PUBLIC_REVIEW_CONTACT` | Required. Where the "book a manual review" link points (`mailto:` or a booking URL) |
 | `NEXT_PUBLIC_REVIEW_PRICE` | Price shown for the manual review, printed as given (for example `$180`) |
 
 ## Limitations
@@ -122,7 +123,7 @@ All settings are optional. Copy `.env.example` to `.env.local` to set them.
 ## Development
 
 ```bash
-npm test           # 287 unit tests, no network needed
+npm test           # 296 unit tests, no network needed
 npm run lint       # tsc --noEmit
 npm run build      # production build
 ```
