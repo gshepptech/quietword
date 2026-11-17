@@ -2,6 +2,12 @@ import path from "node:path";
 
 import type { NextConfig } from "next";
 
+import { reviewContact } from "./src/lib/review";
+
+// The landing page and every report link to the manual review. Without the link,
+// build, dev and start all stop here instead of serving a link to nowhere.
+reviewContact(process.env.NEXT_PUBLIC_REVIEW_CONTACT);
+
 const config: NextConfig = {
   // Pin tracing to this project. Without it Next walks up and finds a lockfile
   // in the parent directory and guesses the wrong root.
