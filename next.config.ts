@@ -4,8 +4,8 @@ import type { NextConfig } from "next";
 
 import { reviewContact } from "./src/lib/review";
 
-// Every page links to the manual review. Without the link, build, dev and start
-// all stop here instead of serving a page that links nowhere.
+// The landing page and every report link to the manual review. Without the link,
+// build, dev and start all stop here instead of serving a link to nowhere.
 reviewContact(process.env.NEXT_PUBLIC_REVIEW_CONTACT);
 
 const config: NextConfig = {
